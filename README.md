@@ -37,7 +37,6 @@ A full-stack food delivery application built with MERN stack (MongoDB, Express.j
 - Customer: customer@demo.com / password123
 - Vendor: vendor@demo.com / password123
 - Driver: driver@demo.com / password123
-- Admin: admin@demo.com / password123
 
 ## License
 MIT
