@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(mongod:*)",
+      "Bash(node seed-demo-data.js:*)",
+      "Bash(node -e:*)",
+      "Bash(curl:*)",
+      "Bash(npm run dev:*)",
+      "Bash(node create-demo-accounts.js:*)",
+      "Bash(taskkill:*)",
+      "Bash(nul)",
+      "Bash(timeout 5 bash:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(node update-specific-images.js:*)",
+      "Bash(move useNotifications.js useNotifications.jsx)",
+      "Bash(mongosh food-delivery:*)",
+      "Bash(node fix-coordinates.js:*)",
+      "Bash(node fix-restaurant-address.js:*)",
+      "Bash(node update-order-distance.js:*)",
+      "Bash(echo:*)",
+      "Bash(\"E:\\Food Delivery\\backend\\src\\controllers\\order.controller.js\")",
+      "Bash(node:*)",
+      "Bash(cat:*)",
+      "Bash(npm start)",
+      "Bash(timeout:*)",
+      "Bash(move /Y auth.test.js.tmp auth.test.js)",
+      "Bash(npm test:*)",
+      "Bash(npm run test:e2e:*)",
+      "Bash(npx cypress cache clear:*)",
+      "Bash(npm run cypress:open:*)",
+      "Bash(dir /b /s __tests__ tests 2)",
+      "Bash(dir:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
