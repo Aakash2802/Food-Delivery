@@ -40,6 +40,16 @@ export default {
         'glow': 'glow 2s ease-in-out infinite',
         'gradient': 'gradient 3s ease infinite',
         'shimmer': 'shimmer 2s infinite',
+        // New animations
+        'cart-bounce': 'cartBounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        'heart-beat': 'heartBeat 0.3s ease-in-out',
+        'fly-to-cart': 'flyToCart 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        'count-up': 'countUp 0.6s ease-out',
+        'ripple': 'ripple 0.6s linear',
+        'scroll-reveal': 'scrollReveal 0.6s ease-out forwards',
+        'pop': 'pop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        'shake': 'shake 0.5s ease-in-out',
+        'success-check': 'successCheck 0.5s ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -104,6 +114,62 @@ export default {
         shimmer: {
           '0%': { backgroundPosition: '-1000px 0' },
           '100%': { backgroundPosition: '1000px 0' },
+        },
+        // New keyframes
+        cartBounce: {
+          '0%': { transform: 'scale(1)' },
+          '25%': { transform: 'scale(1.3)' },
+          '50%': { transform: 'scale(0.9)' },
+          '75%': { transform: 'scale(1.1)' },
+          '100%': { transform: 'scale(1)' },
+        },
+        heartBeat: {
+          '0%': { transform: 'scale(1)' },
+          '25%': { transform: 'scale(1.3)' },
+          '50%': { transform: 'scale(1)' },
+          '75%': { transform: 'scale(1.3)' },
+          '100%': { transform: 'scale(1)' },
+        },
+        flyToCart: {
+          '0%': {
+            opacity: '1',
+            transform: 'translate(0, 0) scale(1)',
+          },
+          '50%': {
+            opacity: '0.8',
+            transform: 'translate(50%, -50%) scale(0.5)',
+          },
+          '100%': {
+            opacity: '0',
+            transform: 'translate(100%, -100%) scale(0)',
+          },
+        },
+        countUp: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        ripple: {
+          '0%': { transform: 'scale(0)', opacity: '0.5' },
+          '100%': { transform: 'scale(4)', opacity: '0' },
+        },
+        scrollReveal: {
+          '0%': { opacity: '0', transform: 'translateY(50px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        pop: {
+          '0%': { transform: 'scale(0.8)', opacity: '0' },
+          '50%': { transform: 'scale(1.1)' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        shake: {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-5px)' },
+          '20%, 40%, 60%, 80%': { transform: 'translateX(5px)' },
+        },
+        successCheck: {
+          '0%': { transform: 'scale(0) rotate(-45deg)', opacity: '0' },
+          '50%': { transform: 'scale(1.2) rotate(-45deg)' },
+          '100%': { transform: 'scale(1) rotate(-45deg)', opacity: '1' },
         },
       },
     },

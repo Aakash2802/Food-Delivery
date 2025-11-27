@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import useAuthStore from './store/useAuthStore';
 import { SocketProvider } from './contexts/SocketContext';
 import NotificationListener from './components/NotificationListener';
+import FlyToCartProvider from './components/FlyToCart';
 
 // Auth Pages
 import LoginPage from './pages/auth/LoginPage';
@@ -77,6 +78,7 @@ const PublicRoute = ({ children }) => {
 function App() {
   return (
     <BrowserRouter>
+      <FlyToCartProvider>
       <SocketProvider>
         <NotificationListener />
         <Toaster
@@ -297,6 +299,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </SocketProvider>
+      </FlyToCartProvider>
     </BrowserRouter>
   );
 }

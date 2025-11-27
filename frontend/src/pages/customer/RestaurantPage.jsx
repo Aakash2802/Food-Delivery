@@ -7,6 +7,7 @@ import useCartStore from '../../store/useCartStore';
 import Navbar from '../../components/Navbar';
 import ReviewList from '../../components/ReviewList';
 import OfferBadge from '../../components/OfferBadge';
+import { triggerFlyToCart } from '../../components/FlyToCart';
 
 const RestaurantPage = () => {
   const { id } = useParams();
@@ -61,7 +62,7 @@ const RestaurantPage = () => {
     ? menuItems
     : menuItems.filter(item => item.category === selectedCategory);
 
-  const handleAddToCart = (item) => {
+  const handleAddToCart = (item, e) => {
     const quantity = quantities[item._id] || 1;
 
     const cartItem = {
@@ -76,6 +77,12 @@ const RestaurantPage = () => {
     if (!restaurant || !restaurant._id) {
       toast.error('Restaurant information not loaded. Please wait...');
       return;
+    }
+
+    // Trigger fly to cart animation
+    if (e) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      triggerFlyToCart(rect.left + rect.width / 2, rect.top, item.images?.[0]?.url);
     }
 
     addItem(cartItem, {
@@ -333,8 +340,8 @@ const RestaurantPage = () => {
 
                           {/* Add to Cart Button */}
                           <button
-                            onClick={() => handleAddToCart(item)}
-                            className="bg-gradient-to-r from-red-600 to-orange-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold flex items-center space-x-2 hover:from-red-700 hover:to-orange-700 transform hover:scale-105 transition-all shadow-lg text-sm md:text-base"
+                            onClick={(e) => handleAddToCart(item, e)}
+                            className="bg-gradient-to-r from-red-600 to-orange-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold flex items-center space-x-2 hover:from-red-700 hover:to-orange-700 transform hover:scale-105 transition-all shadow-lg text-sm md:text-base active:scale-95"
                           >
                             <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
                             <span>Add to Cart</span>

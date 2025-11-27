@@ -6,6 +6,12 @@ const useCartStore = create(
     (set, get) => ({
       items: [],
       restaurant: null,
+      cartBounce: false,
+
+      triggerCartBounce: () => {
+        set({ cartBounce: true });
+        setTimeout(() => set({ cartBounce: false }), 500);
+      },
 
       addItem: (item, restaurant) => {
         // Validate restaurant has required fields
@@ -13,7 +19,7 @@ const useCartStore = create(
           console.error('Invalid restaurant object:', restaurant);
           return;
         }
-        const { items, restaurant: currentRestaurant } = get();
+        const { items, restaurant: currentRestaurant, triggerCartBounce } = get();
 
         // Check if switching restaurants
         if (currentRestaurant && currentRestaurant._id !== restaurant._id) {
@@ -37,6 +43,9 @@ const useCartStore = create(
         } else {
           set({ items: [...items, item], restaurant });
         }
+
+        // Trigger cart bounce animation
+        triggerCartBounce();
       },
 
       removeItem: (index) => {
