@@ -6,9 +6,12 @@ import { restaurantAPI, menuAPI } from '../../services/api';
 import Navbar from '../../components/Navbar';
 import SearchBar from '../../components/SearchBar';
 import OfferBadge from '../../components/OfferBadge';
+import useCartStore from '../../store/useCartStore';
+import { ShoppingCart, Plus } from 'lucide-react';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const addToCart = useCartStore((state) => state.addItem);
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,6 +29,30 @@ const HomePage = () => {
 
   const cuisineOptions = ['All', 'Indian', 'Chinese', 'Italian', 'Fast Food', 'Mexican', 'Thai', 'Japanese'];
   const pricingOptions = ['All', '$', '$$', '$$$'];
+
+  // Add to cart from search results
+  const handleAddToCart = (dish, e) => {
+    e.stopPropagation();
+    const restaurant = dish.restaurantId;
+    if (!restaurant || !restaurant._id) {
+      toast.error('Restaurant info missing');
+      return;
+    }
+    const cartItem = {
+      menuItemId: dish._id,
+      name: dish.name,
+      price: dish.price,
+      quantity: 1,
+      image: dish.images?.[0] || '',
+      customizations: []
+    };
+    addToCart(cartItem, {
+      _id: restaurant._id,
+      name: restaurant.name,
+      image: restaurant.image || ''
+    });
+    toast.success(`${dish.name} added to cart!`);
+  };
 
   useEffect(() => {
     fetchRestaurants();
@@ -241,31 +268,97 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Cuisine Categories Banner */}
-      <div className="bg-gradient-to-r from-orange-50 via-red-50 to-yellow-50 py-12">
+      {/* What's on your mind? - Swiggy Style */}
+      <div className="bg-white py-10">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Explore Madurai Cuisines</h2>
-            <p className="text-gray-600">From traditional to fusion - we've got it all!</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">What's on your mind?</h2>
+          <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
+            {[
+              { name: 'Biryani', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Biryani.png' },
+              { name: 'Dosa', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Dosa.png' },
+              { name: 'Pizza', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Pizza.png' },
+              { name: 'Burger', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Burger.png' },
+              { name: 'Chinese', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Chinese.png' },
+              { name: 'Rolls', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Rolls.png' },
+              { name: 'Idli', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Idli.png' },
+              { name: 'Paratha', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Paratha.png' },
+              { name: 'Thali', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Thali.png' },
+              { name: 'Noodles', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Noodles.png' },
+            ].map((item, index) => (
+              <div
+                key={item.name}
+                onClick={() => handleSearch(item.name)}
+                className="flex flex-col items-center cursor-pointer group flex-shrink-0"
+              >
+                <div className="w-24 h-24 rounded-full overflow-hidden mb-2 transform group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200'; }}
+                  />
+                </div>
+                <span className="text-sm font-medium text-gray-700 group-hover:text-red-600 transition-colors">{item.name}</span>
+              </div>
+            ))}
           </div>
+        </div>
+      </div>
 
-          <div className="bg-white shadow-lg rounded-2xl p-6">
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-              {cuisineOptions.map((cuisine, index) => (
-                <button
-                  key={cuisine}
-                  onClick={() => handleCuisineFilter(cuisine)}
-                  className={`px-8 py-4 rounded-2xl whitespace-nowrap transition-all font-bold transform hover:scale-105 animate-fade-in ${
-                    (filters.cuisines === cuisine || (cuisine === 'All' && !filters.cuisines))
-                      ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-xl'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-md'
-                  }`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  {cuisine}
-                </button>
-              ))}
-            </div>
+      {/* Offers Banner Carousel */}
+      <div className="bg-gradient-to-r from-orange-100 via-red-50 to-yellow-100 py-8">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <Zap className="w-6 h-6 mr-2 text-yellow-500" />
+            Best Offers For You
+          </h2>
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            {[
+              { title: '50% OFF', subtitle: 'Up to ₹100', code: 'SAVE50', bg: 'from-purple-600 to-indigo-600' },
+              { title: 'FREE DELIVERY', subtitle: 'No minimum order', code: 'FREEDEL', bg: 'from-green-600 to-teal-600' },
+              { title: '₹100 OFF', subtitle: 'Orders above ₹299', code: 'FLAT100', bg: 'from-red-600 to-orange-600' },
+              { title: '30% OFF', subtitle: 'Up to ₹75', code: 'SAVE30', bg: 'from-blue-600 to-cyan-600' },
+            ].map((offer, index) => (
+              <div
+                key={offer.code}
+                className={`bg-gradient-to-r ${offer.bg} rounded-2xl p-6 min-w-[280px] flex-shrink-0 text-white shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all cursor-pointer`}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-3xl font-black mb-1">{offer.title}</p>
+                    <p className="text-white/80 text-sm">{offer.subtitle}</p>
+                  </div>
+                  <Award className="w-10 h-10 text-white/30" />
+                </div>
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="bg-white/20 px-3 py-1 rounded-lg text-sm font-bold border-2 border-dashed border-white/50">
+                    {offer.code}
+                  </span>
+                  <span className="text-xs text-white/70">Tap to copy</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Cuisine Filter */}
+      <div className="bg-white py-6 border-b">
+        <div className="container mx-auto px-4">
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {cuisineOptions.map((cuisine, index) => (
+              <button
+                key={cuisine}
+                onClick={() => handleCuisineFilter(cuisine)}
+                className={`px-6 py-2 rounded-full whitespace-nowrap transition-all font-semibold text-sm ${
+                  (filters.cuisines === cuisine || (cuisine === 'All' && !filters.cuisines))
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {cuisine}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -402,6 +495,14 @@ const HomePage = () => {
                           <span>{dish.preparationTime || 20} min</span>
                         </div>
                       </div>
+                      {/* Add to Cart Button */}
+                      <button
+                        onClick={(e) => handleAddToCart(dish, e)}
+                        className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-colors"
+                        title="Add to cart"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
