@@ -785,54 +785,58 @@ const HomePage = () => {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
 
-                  {/* Restaurant Badges */}
-                  <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                    {restaurant.isOpen ? (
-                      <span className="bg-green-500 text-white px-3 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
-                        OPEN
-                      </span>
-                    ) : (
-                      <span className="bg-gray-800 text-white px-3 py-1 rounded-full font-bold text-xs shadow-lg">
-                        CLOSED
-                      </span>
-                    )}
-                    {/* Top Rated Badge */}
-                    {(restaurant.rating?.average || 0) >= 4.5 && (
-                      <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" />
-                        Top Rated
-                      </span>
-                    )}
+                  {/* Restaurant Badges - Top Row */}
+                  <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+                    {/* Left Badges */}
+                    <div className="flex flex-wrap gap-1.5 max-w-[60%]">
+                      {restaurant.isOpen ? (
+                        <span className="bg-green-500 text-white px-2 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+                          OPEN
+                        </span>
+                      ) : (
+                        <span className="bg-gray-800 text-white px-2 py-1 rounded-full font-bold text-xs shadow-lg">
+                          CLOSED
+                        </span>
+                      )}
+                      {/* Top Rated Badge */}
+                      {(restaurant.rating?.average || 0) >= 4.5 && (
+                        <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-2 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" />
+                          Top Rated
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Right Badge - Offer or Pricing */}
+                    <div className="flex-shrink-0">
+                      {restaurant.offers && restaurant.offers.length > 0 ? (
+                        <OfferBadge offer={restaurant.offers[0]} compact={true} />
+                      ) : (
+                        <span className="bg-yellow-400 text-gray-900 px-2 py-1 rounded-full font-black text-xs shadow-lg">
+                          {restaurant.pricing || '$$'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bottom Left Badges */}
+                  <div className="absolute bottom-4 left-4 flex flex-wrap gap-1.5">
                     {/* Pure Veg Badge */}
                     {(restaurant.isVeg || restaurant.cuisines?.some(c => c.toLowerCase().includes('veg'))) && (
-                      <span className="bg-green-600 text-white px-3 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
+                      <span className="bg-green-600 text-white px-2 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
                         <Leaf className="w-3 h-3" />
                         Pure Veg
                       </span>
                     )}
                     {/* Fast Delivery Badge */}
                     {(restaurant.deliveryTime?.min || 30) <= 25 && (
-                      <span className="bg-blue-600 text-white px-3 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
+                      <span className="bg-blue-600 text-white px-2 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
                         <Zap className="w-3 h-3" />
                         Fast
                       </span>
                     )}
                   </div>
-
-                  {/* Offer Badge */}
-                  {restaurant.offers && restaurant.offers.length > 0 && (
-                    <div className="absolute top-4 right-4">
-                      <OfferBadge offer={restaurant.offers[0]} compact={true} />
-                    </div>
-                  )}
-
-                  {/* Pricing Badge - Move to bottom right if offers exist */}
-                  {(!restaurant.offers || restaurant.offers.length === 0) && (
-                    <div className="absolute top-4 right-4 bg-yellow-400 text-gray-900 px-3 py-2 rounded-full font-black text-sm shadow-lg">
-                      {restaurant.pricing || '$$'}
-                    </div>
-                  )}
 
                   {!restaurant.isOpen && (
                     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
