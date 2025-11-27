@@ -1,15 +1,21 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, LogOut, Menu, HelpCircle } from 'lucide-react';
-import { useState } from 'react';
+import { ShoppingCart, User, LogOut, Menu, HelpCircle, Sun, Moon } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import useAuthStore from '../store/useAuthStore';
 import useCartStore from '../store/useCartStore';
+import useThemeStore from '../store/useThemeStore';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuthStore();
   const { getItemCount } = useCartStore();
+  const { isDarkMode, toggleDarkMode, initTheme } = useThemeStore();
   const [showMenu, setShowMenu] = useState(false);
   const cartCount = getItemCount();
+
+  useEffect(() => {
+    initTheme();
+  }, [initTheme]);
 
   const handleLogout = () => {
     logout();
@@ -30,7 +36,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50 w-full animate-slide-down">
+    <nav className="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50 w-full animate-slide-down transition-colors duration-300">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -38,7 +44,7 @@ const Navbar = () => {
             <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg">
               <span className="text-white text-xl font-bold">F</span>
             </div>
-            <span className="text-xl font-bold text-gray-900 whitespace-nowrap transition-colors duration-300 group-hover:text-red-600">FoodDelivery</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white whitespace-nowrap transition-colors duration-300 group-hover:text-red-600">FoodDelivery</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -54,7 +60,7 @@ const Navbar = () => {
                 </Link>
                 {user?.role === 'customer' && (
                   <Link to="/cart" className="relative group">
-                    <ShoppingCart className="w-6 h-6 text-gray-700 group-hover:text-red-600 transition-all duration-300 group-hover:scale-110" />
+                    <ShoppingCart className="w-6 h-6 text-gray-700 dark:text-gray-200 group-hover:text-red-600 transition-all duration-300 group-hover:scale-110" />
                     {cartCount > 0 && (
                       <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
                         {cartCount}
@@ -62,6 +68,18 @@ const Navbar = () => {
                     )}
                   </Link>
                 )}
+                {/* Dark Mode Toggle */}
+                <button
+                  onClick={toggleDarkMode}
+                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110"
+                  title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                >
+                  {isDarkMode ? (
+                    <Sun className="w-5 h-5 text-yellow-500" />
+                  ) : (
+                    <Moon className="w-5 h-5 text-gray-700" />
+                  )}
+                </button>
                 <div className="relative">
                   <button
                     onClick={() => setShowMenu(!showMenu)}
@@ -92,7 +110,19 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link to="/login" className="text-gray-700 hover:text-red-600 transition-all duration-300 hover:scale-110 font-medium">
+                {/* Dark Mode Toggle for non-authenticated */}
+                <button
+                  onClick={toggleDarkMode}
+                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110"
+                  title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                >
+                  {isDarkMode ? (
+                    <Sun className="w-5 h-5 text-yellow-500" />
+                  ) : (
+                    <Moon className="w-5 h-5 text-gray-700" />
+                  )}
+                </button>
+                <Link to="/login" className="text-gray-700 dark:text-gray-200 hover:text-red-600 transition-all duration-300 hover:scale-110 font-medium">
                   Login
                 </Link>
                 <Link

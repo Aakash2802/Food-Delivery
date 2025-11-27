@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, Star, Clock, Filter, Award, TrendingUp, Zap, ChefHat, UtensilsCrossed } from 'lucide-react';
+import { Search, MapPin, Star, Clock, Filter, Award, TrendingUp, Zap, ChefHat, UtensilsCrossed, Leaf, Percent, ChevronDown, Sparkles, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { restaurantAPI, menuAPI, promoAPI } from '../../services/api';
 import Navbar from '../../components/Navbar';
@@ -27,6 +27,22 @@ const HomePage = () => {
     radius: 10  // Default 10 km
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [quickFilters, setQuickFilters] = useState({
+    vegOnly: false,
+    rating4Plus: false,
+    fastDelivery: false,
+    hasOffers: false
+  });
+  const [sortBy, setSortBy] = useState('relevance');
+  const [showSortMenu, setShowSortMenu] = useState(false);
+
+  const sortOptions = [
+    { value: 'relevance', label: 'Relevance' },
+    { value: 'rating', label: 'Rating: High to Low' },
+    { value: 'deliveryTime', label: 'Delivery Time' },
+    { value: 'costLowHigh', label: 'Cost: Low to High' },
+    { value: 'costHighLow', label: 'Cost: High to Low' }
+  ];
 
   const cuisineOptions = ['All', 'Indian', 'Chinese', 'Italian', 'Fast Food', 'Mexican', 'Thai', 'Japanese'];
   const pricingOptions = ['All', '$', '$$', '$$$'];
@@ -154,12 +170,84 @@ const HomePage = () => {
     navigate(`/restaurant/${restaurantId}`);
   };
 
+  // Filter and sort restaurants
+  const getFilteredRestaurants = () => {
+    let filtered = [...restaurants];
+
+    // Apply quick filters
+    if (quickFilters.vegOnly) {
+      filtered = filtered.filter(r => r.isVeg || r.cuisines?.some(c =>
+        c.toLowerCase().includes('veg') || c.toLowerCase().includes('south indian')
+      ));
+    }
+    if (quickFilters.rating4Plus) {
+      filtered = filtered.filter(r => (r.rating?.average || 0) >= 4.0);
+    }
+    if (quickFilters.fastDelivery) {
+      filtered = filtered.filter(r => (r.deliveryTime?.min || 30) <= 30);
+    }
+    if (quickFilters.hasOffers) {
+      filtered = filtered.filter(r => r.offers && r.offers.length > 0);
+    }
+
+    // Apply sorting
+    switch (sortBy) {
+      case 'rating':
+        filtered.sort((a, b) => (b.rating?.average || 0) - (a.rating?.average || 0));
+        break;
+      case 'deliveryTime':
+        filtered.sort((a, b) => (a.deliveryTime?.min || 30) - (b.deliveryTime?.min || 30));
+        break;
+      case 'costLowHigh':
+        filtered.sort((a, b) => {
+          const priceA = a.pricing === '$' ? 1 : a.pricing === '$$' ? 2 : 3;
+          const priceB = b.pricing === '$' ? 1 : b.pricing === '$$' ? 2 : 3;
+          return priceA - priceB;
+        });
+        break;
+      case 'costHighLow':
+        filtered.sort((a, b) => {
+          const priceA = a.pricing === '$' ? 1 : a.pricing === '$$' ? 2 : 3;
+          const priceB = b.pricing === '$' ? 1 : b.pricing === '$$' ? 2 : 3;
+          return priceB - priceA;
+        });
+        break;
+      default:
+        break;
+    }
+
+    return filtered;
+  };
+
+  const filteredRestaurants = getFilteredRestaurants();
+
+  // Skeleton Loading Component
+  const SkeletonCard = () => (
+    <div className="bg-white rounded-3xl shadow-lg overflow-hidden animate-pulse">
+      <div className="h-56 bg-gray-200"></div>
+      <div className="p-6">
+        <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+        <div className="h-20 bg-gray-100 rounded mb-4"></div>
+        <div className="flex justify-between mb-4">
+          <div className="h-8 bg-gray-200 rounded w-20"></div>
+          <div className="h-8 bg-gray-200 rounded w-24"></div>
+        </div>
+        <div className="h-12 bg-gray-200 rounded"></div>
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <div className="flex justify-center items-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -295,7 +383,7 @@ const HomePage = () => {
               { name: 'Paratha', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Paratha.png' },
               { name: 'Thali', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Thali.png' },
               { name: 'Noodles', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Noodles.png' },
-            ].map((item, index) => (
+            ].map((item) => (
               <div
                 key={item.name}
                 onClick={() => handleSearch(item.name)}
@@ -371,23 +459,114 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Cuisine Filter */}
-      <div className="bg-white py-6 border-b">
+      {/* Filter Pills & Sort */}
+      <div className="bg-white py-4 border-b sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4">
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {cuisineOptions.map((cuisine, index) => (
+          <div className="flex items-center justify-between gap-4">
+            {/* Filter Pills */}
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide flex-1">
+              {/* Veg Only */}
               <button
-                key={cuisine}
-                onClick={() => handleCuisineFilter(cuisine)}
-                className={`px-6 py-2 rounded-full whitespace-nowrap transition-all font-semibold text-sm ${
-                  (filters.cuisines === cuisine || (cuisine === 'All' && !filters.cuisines))
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                onClick={() => setQuickFilters(prev => ({ ...prev, vegOnly: !prev.vegOnly }))}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all font-medium text-sm border-2 ${
+                  quickFilters.vegOnly
+                    ? 'bg-green-600 text-white border-green-600'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-green-600'
                 }`}
               >
-                {cuisine}
+                <Leaf className="w-4 h-4" />
+                Pure Veg
+                {quickFilters.vegOnly && <Check className="w-4 h-4" />}
               </button>
-            ))}
+
+              {/* Rating 4.0+ */}
+              <button
+                onClick={() => setQuickFilters(prev => ({ ...prev, rating4Plus: !prev.rating4Plus }))}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all font-medium text-sm border-2 ${
+                  quickFilters.rating4Plus
+                    ? 'bg-yellow-500 text-white border-yellow-500'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-yellow-500'
+                }`}
+              >
+                <Star className="w-4 h-4" />
+                Rating 4.0+
+                {quickFilters.rating4Plus && <Check className="w-4 h-4" />}
+              </button>
+
+              {/* Fast Delivery */}
+              <button
+                onClick={() => setQuickFilters(prev => ({ ...prev, fastDelivery: !prev.fastDelivery }))}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all font-medium text-sm border-2 ${
+                  quickFilters.fastDelivery
+                    ? 'bg-orange-500 text-white border-orange-500'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-orange-500'
+                }`}
+              >
+                <Clock className="w-4 h-4" />
+                Fast Delivery
+                {quickFilters.fastDelivery && <Check className="w-4 h-4" />}
+              </button>
+
+              {/* Offers */}
+              <button
+                onClick={() => setQuickFilters(prev => ({ ...prev, hasOffers: !prev.hasOffers }))}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all font-medium text-sm border-2 ${
+                  quickFilters.hasOffers
+                    ? 'bg-purple-600 text-white border-purple-600'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-purple-600'
+                }`}
+              >
+                <Percent className="w-4 h-4" />
+                Offers
+                {quickFilters.hasOffers && <Check className="w-4 h-4" />}
+              </button>
+
+              {/* Cuisine Pills */}
+              {cuisineOptions.slice(1).map((cuisine) => (
+                <button
+                  key={cuisine}
+                  onClick={() => handleCuisineFilter(cuisine)}
+                  className={`px-4 py-2 rounded-full whitespace-nowrap transition-all font-medium text-sm border-2 ${
+                    filters.cuisines === cuisine
+                      ? 'bg-gray-900 text-white border-gray-900'
+                      : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400'
+                  }`}
+                >
+                  {cuisine}
+                </button>
+              ))}
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="relative flex-shrink-0">
+              <button
+                onClick={() => setShowSortMenu(!showSortMenu)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-gray-400 transition-all"
+              >
+                <span>Sort By</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${showSortMenu ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showSortMenu && (
+                <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[200px] z-50">
+                  {sortOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => {
+                        setSortBy(option.value);
+                        setShowSortMenu(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 flex items-center justify-between ${
+                        sortBy === option.value ? 'text-red-600 font-semibold' : 'text-gray-700'
+                      }`}
+                    >
+                      {option.label}
+                      {sortBy === option.value && <Check className="w-4 h-4" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -551,7 +730,10 @@ const HomePage = () => {
               Top Restaurants in Madurai
             </h2>
             <p className="text-gray-600 mt-2">
-              {restaurants.length} {restaurants.length === 1 ? 'restaurant' : 'restaurants'} available
+              {filteredRestaurants.length} {filteredRestaurants.length === 1 ? 'restaurant' : 'restaurants'} available
+              {(quickFilters.vegOnly || quickFilters.rating4Plus || quickFilters.fastDelivery || quickFilters.hasOffers) && (
+                <span className="text-red-600 ml-2">(filtered)</span>
+              )}
             </p>
           </div>
 
@@ -564,7 +746,7 @@ const HomePage = () => {
           </button>
         </div>
 
-        {restaurants.length === 0 ? (
+        {filteredRestaurants.length === 0 ? (
           <div className="text-center py-20 animate-fade-in">
             <div className="bg-white rounded-3xl shadow-xl p-16 max-w-md mx-auto">
               <UtensilsCrossed className="w-24 h-24 text-gray-300 mx-auto mb-6" />
@@ -574,7 +756,7 @@ const HomePage = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {restaurants.map((restaurant, index) => (
+            {filteredRestaurants.map((restaurant, index) => (
               <div
                 key={restaurant._id}
                 onClick={() => handleRestaurantClick(restaurant._id)}
@@ -589,16 +771,37 @@ const HomePage = () => {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
 
-                  {/* Status Badge */}
-                  <div className="absolute top-4 left-4">
+                  {/* Restaurant Badges */}
+                  <div className="absolute top-4 left-4 flex flex-wrap gap-2">
                     {restaurant.isOpen ? (
-                      <span className="bg-green-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg flex items-center space-x-1">
-                        <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                        <span>OPEN</span>
+                      <span className="bg-green-500 text-white px-3 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+                        OPEN
                       </span>
                     ) : (
-                      <span className="bg-gray-800 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+                      <span className="bg-gray-800 text-white px-3 py-1 rounded-full font-bold text-xs shadow-lg">
                         CLOSED
+                      </span>
+                    )}
+                    {/* Top Rated Badge */}
+                    {(restaurant.rating?.average || 0) >= 4.5 && (
+                      <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        Top Rated
+                      </span>
+                    )}
+                    {/* Pure Veg Badge */}
+                    {(restaurant.isVeg || restaurant.cuisines?.some(c => c.toLowerCase().includes('veg'))) && (
+                      <span className="bg-green-600 text-white px-3 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
+                        <Leaf className="w-3 h-3" />
+                        Pure Veg
+                      </span>
+                    )}
+                    {/* Fast Delivery Badge */}
+                    {(restaurant.deliveryTime?.min || 30) <= 25 && (
+                      <span className="bg-blue-600 text-white px-3 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
+                        <Zap className="w-3 h-3" />
+                        Fast
                       </span>
                     )}
                   </div>
