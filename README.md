@@ -2,6 +2,13 @@
 
 A full-stack food delivery application built with MERN stack (MongoDB, Express.js, React, Node.js) featuring real-time order tracking, multiple user roles, and a modern UI.
 
+## Live Demo
+
+**[View Live Demo](https://food-delivery-rho-peach.vercel.app)**
+
+- Frontend: https://food-delivery-rho-peach.vercel.app
+- Backend API: https://food-delivery-wn7h.onrender.com
+
 ## Features
 
 - Browse restaurants and menus with real-time updates
