@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import useAuthStore from '../store/useAuthStore';
 import useCartStore from '../store/useCartStore';
 import useThemeStore from '../store/useThemeStore';
+import AnimatedBadge from './AnimatedBadge';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -61,11 +62,11 @@ const Navbar = () => {
                 {user?.role === 'customer' && (
                   <Link to="/cart" className="relative group" data-cart-icon>
                     <ShoppingCart className={`w-6 h-6 text-gray-700 dark:text-gray-200 group-hover:text-red-600 transition-all duration-300 group-hover:scale-110 ${cartBounce ? 'animate-cart-bounce text-red-600' : ''}`} />
-                    {cartCount > 0 && (
-                      <span className={`absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ${cartBounce ? 'animate-pop' : 'animate-pulse'}`}>
-                        {cartCount}
-                      </span>
-                    )}
+                    <AnimatedBadge
+                      count={cartCount}
+                      color="red"
+                      className="absolute -top-2 -right-2"
+                    />
                   </Link>
                 )}
                 {/* Dark Mode Toggle */}

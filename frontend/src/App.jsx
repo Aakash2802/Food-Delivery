@@ -4,6 +4,7 @@ import useAuthStore from './store/useAuthStore';
 import { SocketProvider } from './contexts/SocketContext';
 import NotificationListener from './components/NotificationListener';
 import FlyToCartProvider from './components/FlyToCart';
+import PageTransition from './components/PageTransition';
 
 // Auth Pages
 import LoginPage from './pages/auth/LoginPage';
@@ -106,6 +107,7 @@ function App() {
           }}
         />
 
+        <PageTransition>
         <Routes>
         {/* Public Routes */}
         <Route
@@ -298,6 +300,7 @@ function App() {
         {/* 404 - Catch all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+        </PageTransition>
       </SocketProvider>
       </FlyToCartProvider>
     </BrowserRouter>
