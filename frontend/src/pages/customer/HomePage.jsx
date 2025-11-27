@@ -318,9 +318,14 @@ const HomePage = () => {
               { title: 'FREE DELIVERY', subtitle: 'No minimum order', code: 'FREEDEL', bg: 'from-green-600 to-teal-600' },
               { title: '₹100 OFF', subtitle: 'Orders above ₹299', code: 'FLAT100', bg: 'from-red-600 to-orange-600' },
               { title: '30% OFF', subtitle: 'Up to ₹75', code: 'SAVE30', bg: 'from-blue-600 to-cyan-600' },
+              { title: '₹50 OFF', subtitle: 'Special code by Aakash', code: 'AAKASH', bg: 'from-pink-600 to-rose-600' },
             ].map((offer, index) => (
               <div
                 key={offer.code}
+                onClick={() => {
+                  navigator.clipboard.writeText(offer.code);
+                  toast.success(`Copied "${offer.code}" to clipboard!`);
+                }}
                 className={`bg-gradient-to-r ${offer.bg} rounded-2xl p-6 min-w-[280px] flex-shrink-0 text-white shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all cursor-pointer`}
               >
                 <div className="flex justify-between items-start">
