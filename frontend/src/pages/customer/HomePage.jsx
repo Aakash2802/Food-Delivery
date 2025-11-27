@@ -280,7 +280,7 @@ const HomePage = () => {
       </div>
 
       {/* What's on your mind? - Swiggy Style */}
-      <div className="bg-white py-10">
+      <div className="bg-white py-6 -mt-1">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">What's on your mind?</h2>
           <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
