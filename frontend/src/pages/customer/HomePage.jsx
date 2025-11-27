@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, Star, Clock, Filter, Award, TrendingUp, Zap, ChefHat, UtensilsCrossed } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { restaurantAPI, menuAPI } from '../../services/api';
+import { restaurantAPI, menuAPI, promoAPI } from '../../services/api';
 import Navbar from '../../components/Navbar';
 import SearchBar from '../../components/SearchBar';
 import OfferBadge from '../../components/OfferBadge';
@@ -17,6 +17,7 @@ const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [promoCodes, setPromoCodes] = useState([]);
   const [filters, setFilters] = useState({
     cuisines: '',
     minRating: 0,
@@ -56,7 +57,17 @@ const HomePage = () => {
 
   useEffect(() => {
     fetchRestaurants();
+    fetchPromoCodes();
   }, [filters]);
+
+  const fetchPromoCodes = async () => {
+    try {
+      const response = await promoAPI.getActive();
+      setPromoCodes(response.data || []);
+    } catch (error) {
+      console.error('Failed to fetch promo codes:', error);
+    }
+  };
 
   const fetchRestaurants = async () => {
     try {
@@ -313,36 +324,49 @@ const HomePage = () => {
             Best Offers For You
           </h2>
           <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-            {[
-              { title: '50% OFF', subtitle: 'Up to ₹100', code: 'SAVE50', bg: 'from-purple-600 to-indigo-600' },
-              { title: 'FREE DELIVERY', subtitle: 'No minimum order', code: 'FREEDEL', bg: 'from-green-600 to-teal-600' },
-              { title: '₹100 OFF', subtitle: 'Orders above ₹299', code: 'FLAT100', bg: 'from-red-600 to-orange-600' },
-              { title: '30% OFF', subtitle: 'Up to ₹75', code: 'SAVE30', bg: 'from-blue-600 to-cyan-600' },
-              { title: '₹50 OFF', subtitle: 'Special code by Aakash', code: 'AAKASH', bg: 'from-pink-600 to-rose-600' },
-            ].map((offer, index) => (
-              <div
-                key={offer.code}
-                onClick={() => {
-                  navigator.clipboard.writeText(offer.code);
-                  toast.success(`Copied "${offer.code}" to clipboard!`);
-                }}
-                className={`bg-gradient-to-r ${offer.bg} rounded-2xl p-6 min-w-[280px] flex-shrink-0 text-white shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all cursor-pointer`}
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-3xl font-black mb-1">{offer.title}</p>
-                    <p className="text-white/80 text-sm">{offer.subtitle}</p>
+            {promoCodes.length > 0 ? promoCodes.map((promo, index) => {
+              const gradients = [
+                'from-purple-600 to-indigo-600',
+                'from-green-600 to-teal-600',
+                'from-red-600 to-orange-600',
+                'from-blue-600 to-cyan-600',
+                'from-pink-600 to-rose-600',
+              ];
+              const bg = gradients[index % gradients.length];
+              const title = promo.type === 'percentage'
+                ? `${promo.value}% OFF`
+                : `₹${promo.value} OFF`;
+              const subtitle = promo.minOrderValue > 0
+                ? `Orders above ₹${promo.minOrderValue}`
+                : promo.description;
+
+              return (
+                <div
+                  key={promo._id}
+                  onClick={() => {
+                    navigator.clipboard.writeText(promo.code);
+                    toast.success(`Copied "${promo.code}" to clipboard!`);
+                  }}
+                  className={`bg-gradient-to-r ${bg} rounded-2xl p-6 min-w-[280px] flex-shrink-0 text-white shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all cursor-pointer`}
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-3xl font-black mb-1">{title}</p>
+                      <p className="text-white/80 text-sm">{subtitle}</p>
+                    </div>
+                    <Award className="w-10 h-10 text-white/30" />
                   </div>
-                  <Award className="w-10 h-10 text-white/30" />
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="bg-white/20 px-3 py-1 rounded-lg text-sm font-bold border-2 border-dashed border-white/50">
+                      {promo.code}
+                    </span>
+                    <span className="text-xs text-white/70">Tap to copy</span>
+                  </div>
                 </div>
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="bg-white/20 px-3 py-1 rounded-lg text-sm font-bold border-2 border-dashed border-white/50">
-                    {offer.code}
-                  </span>
-                  <span className="text-xs text-white/70">Tap to copy</span>
-                </div>
-              </div>
-            ))}
+              );
+            }) : (
+              <p className="text-gray-500">No offers available</p>
+            )}
           </div>
         </div>
       </div>
