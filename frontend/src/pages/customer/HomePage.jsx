@@ -280,8 +280,8 @@ const HomePage = () => {
       </div>
 
       {/* What's on your mind? - Swiggy Style */}
-      <div className="bg-white py-6 -mt-1">
-        <div className="container mx-auto px-4">
+      <div className="bg-white py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">What's on your mind?</h2>
           <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
             {[
@@ -318,7 +318,7 @@ const HomePage = () => {
 
       {/* Offers Banner Carousel */}
       <div className="bg-gradient-to-r from-orange-100 via-red-50 to-yellow-100 py-8">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
             <Zap className="w-6 h-6 mr-2 text-yellow-500" />
             Best Offers For You
