@@ -7,11 +7,13 @@ import Navbar from '../../components/Navbar';
 import SearchBar from '../../components/SearchBar';
 import OfferBadge from '../../components/OfferBadge';
 import useCartStore from '../../store/useCartStore';
+import useParallax from '../../hooks/useParallax';
 import { ShoppingCart, Plus } from 'lucide-react';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const addToCart = useCartStore((state) => state.addItem);
+  const parallaxOffset = useParallax(0.3); // 0.3 = 30% parallax effect
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -259,8 +261,11 @@ const HomePage = () => {
 
       {/* Massive Hero Banner - Madurai Special */}
       <div className="relative bg-gradient-to-br from-red-600 via-orange-600 to-yellow-500 text-white overflow-hidden">
-        {/* Animated Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
+        {/* Animated Background Pattern with Parallax */}
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{ transform: `translateY(${parallaxOffset * 0.5}px)` }}
+        >
           <div className="absolute top-10 left-10 w-64 h-64 bg-white rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-10 right-10 w-96 h-96 bg-yellow-300 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
           <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-orange-300 rounded-full blur-2xl animate-bounce-slow"></div>
@@ -318,11 +323,14 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Right Image - Animated Food Collage */}
+            {/* Right Image - Animated Food Collage with Parallax */}
             <div className="hidden md:block relative animate-slide-in-right">
               <div className="relative w-full h-96">
-                {/* Main Food Image */}
-                <div className="absolute top-0 right-0 w-80 h-80 bg-white rounded-3xl shadow-2xl transform rotate-6 hover:rotate-0 transition-transform duration-500 overflow-hidden animate-float">
+                {/* Main Food Image with Parallax */}
+                <div
+                  className="absolute top-0 right-0 w-80 h-80 bg-white rounded-3xl shadow-2xl transform rotate-6 hover:rotate-0 transition-transform duration-500 overflow-hidden animate-float"
+                  style={{ transform: `rotate(6deg) translateY(${parallaxOffset * -0.2}px)` }}
+                >
                   <img
                     src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600"
                     alt="Madurai Biryani"
@@ -333,8 +341,11 @@ const HomePage = () => {
                   </div>
                 </div>
 
-                {/* Secondary Food Image */}
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-white rounded-3xl shadow-2xl transform -rotate-6 hover:rotate-0 transition-transform duration-500 overflow-hidden" style={{ animationDelay: '0.3s' }}>
+                {/* Secondary Food Image with Parallax */}
+                <div
+                  className="absolute bottom-0 left-0 w-64 h-64 bg-white rounded-3xl shadow-2xl transform -rotate-6 hover:rotate-0 transition-transform duration-500 overflow-hidden"
+                  style={{ transform: `rotate(-6deg) translateY(${parallaxOffset * -0.4}px)`, animationDelay: '0.3s' }}
+                >
                   <img
                     src="https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=500"
                     alt="South Indian Dosa"
@@ -345,8 +356,11 @@ const HomePage = () => {
                   </div>
                 </div>
 
-                {/* Floating Badge */}
-                <div className="absolute top-10 left-10 bg-yellow-400 text-gray-900 px-6 py-3 rounded-full font-black text-lg shadow-2xl animate-bounce-slow">
+                {/* Floating Badge with Parallax */}
+                <div
+                  className="absolute top-10 left-10 bg-yellow-400 text-gray-900 px-6 py-3 rounded-full font-black text-lg shadow-2xl animate-bounce-slow"
+                  style={{ transform: `translateY(${parallaxOffset * -0.6}px)` }}
+                >
                   <div className="flex items-center space-x-2">
                     <Star className="w-6 h-6 fill-current" />
                     <span>5 Restaurants</span>

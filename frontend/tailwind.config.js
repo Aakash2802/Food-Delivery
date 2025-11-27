@@ -40,7 +40,7 @@ export default {
         'glow': 'glow 2s ease-in-out infinite',
         'gradient': 'gradient 3s ease infinite',
         'shimmer': 'shimmer 2s infinite',
-        // New animations
+        // New animations - Round 1
         'cart-bounce': 'cartBounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
         'heart-beat': 'heartBeat 0.3s ease-in-out',
         'fly-to-cart': 'flyToCart 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
@@ -50,6 +50,15 @@ export default {
         'pop': 'pop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
         'shake': 'shake 0.5s ease-in-out',
         'success-check': 'successCheck 0.5s ease-out',
+        // New animations - Round 2
+        'confetti-fall': 'confettiFall 3s ease-out forwards',
+        'typing-cursor': 'typingCursor 0.7s infinite',
+        'stepper-pulse': 'stepperPulse 2s ease-in-out infinite',
+        'star-fill': 'starFill 0.3s ease-out forwards',
+        'badge-pop': 'badgePop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        'check-draw': 'checkDraw 0.5s ease-out forwards',
+        'sparkle': 'sparkle 1s ease-in-out infinite',
+        'dots-bounce': 'dotsBounce 0.6s infinite',
       },
       keyframes: {
         fadeIn: {
@@ -170,6 +179,41 @@ export default {
           '0%': { transform: 'scale(0) rotate(-45deg)', opacity: '0' },
           '50%': { transform: 'scale(1.2) rotate(-45deg)' },
           '100%': { transform: 'scale(1) rotate(-45deg)', opacity: '1' },
+        },
+        // New keyframes - Round 2
+        confettiFall: {
+          '0%': { transform: 'translateY(-100vh) rotate(0deg)', opacity: '1' },
+          '100%': { transform: 'translateY(100vh) rotate(720deg)', opacity: '0' },
+        },
+        typingCursor: {
+          '0%, 50%': { opacity: '1' },
+          '51%, 100%': { opacity: '0' },
+        },
+        stepperPulse: {
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(34, 197, 94, 0.4)' },
+          '50%': { boxShadow: '0 0 0 10px rgba(34, 197, 94, 0)' },
+        },
+        starFill: {
+          '0%': { transform: 'scale(0)', opacity: '0' },
+          '50%': { transform: 'scale(1.2)' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        badgePop: {
+          '0%': { transform: 'scale(0.5)', opacity: '0' },
+          '50%': { transform: 'scale(1.2)' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        checkDraw: {
+          '0%': { strokeDashoffset: '100' },
+          '100%': { strokeDashoffset: '0' },
+        },
+        sparkle: {
+          '0%, 100%': { opacity: '0', transform: 'scale(0)' },
+          '50%': { opacity: '1', transform: 'scale(1)' },
+        },
+        dotsBounce: {
+          '0%, 80%, 100%': { transform: 'scale(0)' },
+          '40%': { transform: 'scale(1)' },
         },
       },
     },

@@ -1,13 +1,24 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, Clock, X, TrendingUp } from 'lucide-react';
 import useSearchHistory from '../hooks/useSearchHistory';
+import TypingEffect from './TypingEffect';
 
 const SearchBar = ({ onSearch, placeholder = "Search for restaurants, cuisines, or dishes...", autoFocus = false }) => {
   const [query, setQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const [isFocused, setIsFocused] = useState(false);
   const searchRef = useRef(null);
   const { searchHistory, addToHistory, removeFromHistory, clearHistory } = useSearchHistory();
+
+  // Animated placeholder texts
+  const typingTexts = [
+    'Search for "Biryani"...',
+    'Search for "Pizza"...',
+    'Search for "Dosa"...',
+    'Search for "Burger"...',
+    'Search for "Chinese"...',
+  ];
 
   // Popular/trending searches (can be fetched from backend in future)
   const trendingSearches = [
@@ -80,15 +91,27 @@ const SearchBar = ({ onSearch, placeholder = "Search for restaurants, cuisines, 
       {/* Search Input */}
       <form onSubmit={handleSubmit} className="relative">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
+
+          {/* Animated Typing Placeholder */}
+          {!query && !isFocused && (
+            <div className="absolute left-12 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none">
+              <TypingEffect texts={typingTexts} typingSpeed={80} deletingSpeed={50} pauseDuration={2000} />
+            </div>
+          )}
+
           <input
             type="text"
             value={query}
             onChange={handleInputChange}
-            onFocus={() => setShowDropdown(true)}
-            placeholder={placeholder}
+            onFocus={() => {
+              setShowDropdown(true);
+              setIsFocused(true);
+            }}
+            onBlur={() => setIsFocused(false)}
+            placeholder={isFocused ? placeholder : ''}
             autoFocus={autoFocus}
-            className="w-full pl-12 pr-12 py-4 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none text-gray-900 placeholder-gray-400 transition-colors"
+            className="w-full pl-12 pr-12 py-4 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none text-gray-900 placeholder-gray-400 transition-colors bg-white"
           />
           {query && (
             <button

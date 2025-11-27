@@ -7,6 +7,8 @@ import socketService from '../../services/socket';
 import Navbar from '../../components/Navbar';
 import ReviewModal from '../../components/ReviewModal';
 import OrderTrackingMap from '../../components/OrderTrackingMap';
+import Confetti from '../../components/Confetti';
+import SuccessCheckmark from '../../components/SuccessCheckmark';
 
 const OrderTrackingPage = () => {
   const { id } = useParams();
@@ -131,6 +133,9 @@ const OrderTrackingPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Confetti celebration when order is delivered */}
+      <Confetti active={order.status === 'delivered'} />
+
       <Navbar />
 
       <div className="container mx-auto px-4 py-8">
@@ -352,10 +357,14 @@ const OrderTrackingPage = () => {
           {/* Rate Order Button - Show only if delivered */}
           {order.status === 'delivered' && (
             <div className="bg-white rounded-2xl shadow-lg p-6 mt-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">
-                How was your experience?
+              {/* Success Animation */}
+              <div className="flex justify-center mb-4">
+                <SuccessCheckmark size={80} />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
+                Order Delivered Successfully!
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 mb-6 text-center">
                 Share your feedback about the food quality and delivery service
               </p>
               <button
