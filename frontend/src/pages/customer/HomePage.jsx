@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Star, Clock, Filter, Award, TrendingUp, Zap, ChefHat, UtensilsCrossed, Percent, ChevronDown, Sparkles, Check } from 'lucide-react';
+import { Search, Star, Clock, Filter, Award, TrendingUp, Zap, ChefHat, UtensilsCrossed, Percent, ChevronDown, Sparkles, Check, Leaf } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { restaurantAPI, menuAPI, promoAPI } from '../../services/api';
 import Navbar from '../../components/Navbar';
