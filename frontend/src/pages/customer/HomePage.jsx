@@ -225,24 +225,24 @@ const HomePage = () => {
 
   // Skeleton Loading Component
   const SkeletonCard = () => (
-    <div className="bg-white rounded-3xl shadow-lg overflow-hidden animate-pulse">
-      <div className="h-56 bg-gray-200"></div>
+    <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg overflow-hidden animate-pulse">
+      <div className="h-56 bg-gray-200 dark:bg-gray-700"></div>
       <div className="p-6">
-        <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
-        <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-        <div className="h-20 bg-gray-100 rounded mb-4"></div>
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-3"></div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4"></div>
+        <div className="h-20 bg-gray-100 dark:bg-gray-700 rounded mb-4"></div>
         <div className="flex justify-between mb-4">
-          <div className="h-8 bg-gray-200 rounded w-20"></div>
-          <div className="h-8 bg-gray-200 rounded w-24"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
         </div>
-        <div className="h-12 bg-gray-200 rounded"></div>
+        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
       </div>
     </div>
   );
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <Navbar />
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -256,7 +256,7 @@ const HomePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       <Navbar />
 
       {/* Massive Hero Banner - Madurai Special */}
@@ -382,9 +382,9 @@ const HomePage = () => {
       </div>
 
       {/* What's on your mind? - Swiggy Style */}
-      <div className="bg-white py-6">
+      <div className="bg-white dark:bg-gray-800 py-6 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">What's on your mind?</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">What's on your mind?</h2>
           <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
             {[
               { name: 'Biryani', image: 'https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto/PC_Mweb/Biryani.png' },
@@ -411,7 +411,7 @@ const HomePage = () => {
                     onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200'; }}
                   />
                 </div>
-                <span className="text-sm font-medium text-gray-700 group-hover:text-red-600 transition-colors">{item.name}</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-red-600 transition-colors">{item.name}</span>
               </div>
             ))}
           </div>
@@ -419,9 +419,9 @@ const HomePage = () => {
       </div>
 
       {/* Offers Banner Carousel */}
-      <div className="bg-gradient-to-r from-orange-100 via-red-50 to-yellow-100 py-8">
+      <div className="bg-gradient-to-r from-orange-100 via-red-50 to-yellow-100 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 py-8 transition-colors duration-300">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
             <Zap className="w-6 h-6 mr-2 text-yellow-500" />
             Best Offers For You
           </h2>
@@ -467,14 +467,14 @@ const HomePage = () => {
                 </div>
               );
             }) : (
-              <p className="text-gray-500">No offers available</p>
+              <p className="text-gray-500 dark:text-gray-400">No offers available</p>
             )}
           </div>
         </div>
       </div>
 
       {/* Filter Pills & Sort */}
-      <div className="bg-white py-4 border-b sticky top-0 z-40 shadow-sm">
+      <div className="bg-white dark:bg-gray-900 py-4 border-b dark:border-gray-700 sticky top-0 z-40 shadow-sm transition-colors duration-300">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between gap-4">
             {/* Filter Pills */}
@@ -485,7 +485,7 @@ const HomePage = () => {
                 className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all font-medium text-sm border-2 ${
                   quickFilters.vegOnly
                     ? 'bg-green-600 text-white border-green-600'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-green-600'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-green-600'
                 }`}
               >
                 <Leaf className="w-4 h-4" />
@@ -499,7 +499,7 @@ const HomePage = () => {
                 className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all font-medium text-sm border-2 ${
                   quickFilters.rating4Plus
                     ? 'bg-yellow-500 text-white border-yellow-500'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-yellow-500'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-yellow-500'
                 }`}
               >
                 <Star className="w-4 h-4" />
@@ -513,7 +513,7 @@ const HomePage = () => {
                 className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all font-medium text-sm border-2 ${
                   quickFilters.fastDelivery
                     ? 'bg-orange-500 text-white border-orange-500'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-orange-500'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-orange-500'
                 }`}
               >
                 <Clock className="w-4 h-4" />
@@ -527,7 +527,7 @@ const HomePage = () => {
                 className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all font-medium text-sm border-2 ${
                   quickFilters.hasOffers
                     ? 'bg-purple-600 text-white border-purple-600'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-purple-600'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-purple-600'
                 }`}
               >
                 <Percent className="w-4 h-4" />
@@ -543,7 +543,7 @@ const HomePage = () => {
                   className={`px-4 py-2 rounded-full whitespace-nowrap transition-all font-medium text-sm border-2 ${
                     filters.cuisines === cuisine
                       ? 'bg-gray-900 text-white border-gray-900'
-                      : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400'
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-gray-400'
                   }`}
                 >
                   {cuisine}
@@ -555,14 +555,14 @@ const HomePage = () => {
             <div className="relative flex-shrink-0">
               <button
                 onClick={() => setShowSortMenu(!showSortMenu)}
-                className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-gray-400 transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-gray-400 transition-all"
               >
                 <span>Sort By</span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${showSortMenu ? 'rotate-180' : ''}`} />
               </button>
 
               {showSortMenu && (
-                <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 py-2 min-w-[200px] z-50">
+                <div className="absolute right-0 top-full mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 py-2 min-w-[200px] z-50">
                   {sortOptions.map((option) => (
                     <button
                       key={option.value}
@@ -570,8 +570,8 @@ const HomePage = () => {
                         setSortBy(option.value);
                         setShowSortMenu(false);
                       }}
-                      className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 flex items-center justify-between ${
-                        sortBy === option.value ? 'text-red-600 font-semibold' : 'text-gray-700'
+                      className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between ${
+                        sortBy === option.value ? 'text-red-600 font-semibold' : 'text-gray-700 dark:text-gray-300'
                       }`}
                     >
                       {option.label}
@@ -587,17 +587,17 @@ const HomePage = () => {
 
       {/* Advanced Filters */}
       {showFilters && (
-        <div className="bg-white border-b border-gray-200 animate-slide-in-left">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 animate-slide-in-left transition-colors duration-300">
           <div className="container mx-auto px-4 py-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-3">
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
                   Minimum Rating
                 </label>
                 <select
                   value={filters.minRating}
                   onChange={(e) => setFilters({ ...filters, minRating: parseFloat(e.target.value) })}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-200 outline-none transition-all"
+                  className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-200 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="0">Any Rating</option>
                   <option value="3">3+ Stars</option>
@@ -607,13 +607,13 @@ const HomePage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-3">
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
                   Price Range
                 </label>
                 <select
                   value={filters.pricing}
                   onChange={(e) => setFilters({ ...filters, pricing: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-200 outline-none transition-all"
+                  className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-200 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   {pricingOptions.map((price) => (
                     <option key={price} value={price === 'All' ? '' : price}>
@@ -624,13 +624,13 @@ const HomePage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-3">
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
                   Distance (km)
                 </label>
                 <select
                   value={filters.radius}
                   onChange={(e) => setFilters({ ...filters, radius: parseInt(e.target.value) })}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-200 outline-none transition-all"
+                  className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl focus:border-red-600 focus:ring-2 focus:ring-red-200 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="2">2 km</option>
                   <option value="5">5 km</option>
@@ -648,17 +648,17 @@ const HomePage = () => {
         <div className="container mx-auto px-4 py-12">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 flex items-center">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
                 <Search className="w-8 h-8 mr-3 text-red-600" />
                 Search Results for "{searchQuery}"
               </h2>
-              <p className="text-gray-600 mt-2">
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
                 {searchResults.length} {searchResults.length === 1 ? 'dish' : 'dishes'} found
               </p>
             </div>
             <button
               onClick={clearSearch}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all font-bold"
+              className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-all font-bold"
             >
               Clear Search
             </button>
@@ -666,10 +666,10 @@ const HomePage = () => {
 
           {searchResults.length === 0 ? (
             <div className="text-center py-20 animate-fade-in">
-              <div className="bg-white rounded-3xl shadow-xl p-16 max-w-md mx-auto">
-                <Search className="w-24 h-24 text-gray-300 mx-auto mb-6" />
-                <p className="text-gray-500 text-2xl font-bold mb-3">No dishes found</p>
-                <p className="text-gray-400 text-lg">Try searching for something else</p>
+              <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-16 max-w-md mx-auto">
+                <Search className="w-24 h-24 text-gray-300 dark:text-gray-600 mx-auto mb-6" />
+                <p className="text-gray-500 dark:text-gray-400 text-2xl font-bold mb-3">No dishes found</p>
+                <p className="text-gray-400 dark:text-gray-500 text-lg">Try searching for something else</p>
               </div>
             </div>
           ) : (
@@ -678,7 +678,7 @@ const HomePage = () => {
                 <div
                   key={dish._id}
                   onClick={() => navigate(`/restaurant/${dish.restaurantId?._id}`)}
-                  className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer group"
+                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer group"
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
                   {/* Dish Image */}
@@ -693,23 +693,23 @@ const HomePage = () => {
                     ) : (
                       <span className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">NON-VEG</span>
                     )}
-                    <div className="absolute bottom-3 right-3 bg-white px-3 py-1 rounded-lg shadow-lg">
-                      <span className="text-lg font-bold text-green-600">₹{dish.price}</span>
+                    <div className="absolute bottom-3 right-3 bg-white dark:bg-gray-700 px-3 py-1 rounded-lg shadow-lg">
+                      <span className="text-lg font-bold text-green-600 dark:text-green-400">₹{dish.price}</span>
                     </div>
                   </div>
 
                   {/* Dish Info */}
                   <div className="p-4">
-                    <h3 className="font-bold text-lg text-gray-900 mb-1 truncate">{dish.name}</h3>
-                    <p className="text-gray-500 text-sm mb-2 line-clamp-2">{dish.description}</p>
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-1 truncate">{dish.name}</h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-2 line-clamp-2">{dish.description}</p>
 
                     {/* Restaurant Info */}
-                    <div className="flex items-center pt-3 border-t border-gray-100">
+                    <div className="flex items-center pt-3 border-t border-gray-100 dark:border-gray-700">
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-red-600 truncate">
                           {dish.restaurantId?.name || 'Restaurant'}
                         </p>
-                        <div className="flex items-center text-xs text-gray-500 mt-1">
+                        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1">
                           <Star className="w-3 h-3 text-yellow-500 mr-1" />
                           <span>{dish.restaurantId?.rating?.average || '4.0'}</span>
                           <span className="mx-2">•</span>
@@ -739,11 +739,11 @@ const HomePage = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 flex items-center">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
               <TrendingUp className="w-8 h-8 mr-3 text-red-600" />
               Top Restaurants in Madurai
             </h2>
-            <p className="text-gray-600 mt-2">
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
               {filteredRestaurants.length} {filteredRestaurants.length === 1 ? 'restaurant' : 'restaurants'} available
               {(quickFilters.vegOnly || quickFilters.rating4Plus || quickFilters.fastDelivery || quickFilters.hasOffers) && (
                 <span className="text-red-600 ml-2">(filtered)</span>
@@ -762,10 +762,10 @@ const HomePage = () => {
 
         {filteredRestaurants.length === 0 ? (
           <div className="text-center py-20 animate-fade-in">
-            <div className="bg-white rounded-3xl shadow-xl p-16 max-w-md mx-auto">
-              <UtensilsCrossed className="w-24 h-24 text-gray-300 mx-auto mb-6" />
-              <p className="text-gray-500 text-2xl font-bold mb-3">No restaurants found</p>
-              <p className="text-gray-400 text-lg">Try adjusting your filters or location</p>
+            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-16 max-w-md mx-auto">
+              <UtensilsCrossed className="w-24 h-24 text-gray-300 dark:text-gray-600 mx-auto mb-6" />
+              <p className="text-gray-500 dark:text-gray-400 text-2xl font-bold mb-3">No restaurants found</p>
+              <p className="text-gray-400 dark:text-gray-500 text-lg">Try adjusting your filters or location</p>
             </div>
           </div>
         ) : (
@@ -774,7 +774,7 @@ const HomePage = () => {
               <div
                 key={restaurant._id}
                 onClick={() => handleRestaurantClick(restaurant._id)}
-                className="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer card-hover animate-fade-in group flex flex-col"
+                className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer card-hover animate-fade-in group flex flex-col"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {/* Restaurant Image */}
@@ -842,10 +842,10 @@ const HomePage = () => {
                 {/* Restaurant Info */}
                 <div className="p-6 flex flex-col flex-1">
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-red-600 transition-colors">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-red-600 transition-colors">
                       {restaurant.name}
                     </h3>
-                    <p className="text-gray-600 text-sm mb-3">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
                       {restaurant.cuisines?.join(' • ') || 'Various cuisines'}
                     </p>
 
@@ -854,7 +854,7 @@ const HomePage = () => {
                       {restaurant.offers && restaurant.offers.length > 0 ? (
                         <div className="space-y-2 w-full">
                           {/* Show only first offer to maintain consistent height */}
-                          <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-2 rounded-lg border border-green-200">
+                          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 px-3 py-2 rounded-lg border border-green-200 dark:border-green-800">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-2">
                                 <span className="font-bold text-green-700 text-sm">
@@ -880,7 +880,7 @@ const HomePage = () => {
                           )}
                         </div>
                       ) : (
-                        <div className="flex items-center justify-center w-full h-full text-gray-400 text-sm italic">
+                        <div className="flex items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 text-sm italic">
                           No active offers
                         </div>
                       )}
@@ -888,17 +888,17 @@ const HomePage = () => {
 
                     {/* Stats */}
                     <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-1 bg-yellow-50 px-3 py-2 rounded-lg">
+                      <div className="flex items-center space-x-1 bg-yellow-50 dark:bg-yellow-900/30 px-3 py-2 rounded-lg">
                         <Star className="w-5 h-5 text-yellow-500 fill-current" />
-                        <span className="font-bold text-gray-900 text-lg">
+                        <span className="font-bold text-gray-900 dark:text-white text-lg">
                           {restaurant.rating?.average?.toFixed(1) || '4.0'}
                         </span>
-                        <span className="text-gray-500 text-sm">
+                        <span className="text-gray-500 dark:text-gray-400 text-sm">
                           ({restaurant.rating?.count || 0})
                         </span>
                       </div>
 
-                      <div className="flex items-center space-x-2 text-gray-600">
+                      <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
                         <Clock className="w-5 h-5" />
                         <span className="font-semibold">
                           {restaurant.deliveryTime?.min || 30}-{restaurant.deliveryTime?.max || 45} min
@@ -908,9 +908,9 @@ const HomePage = () => {
                   </div>
 
                   {/* Footer - Always at bottom */}
-                  <div className="pt-4 border-t border-gray-100 mt-auto">
+                  <div className="pt-4 border-t border-gray-100 dark:border-gray-700 mt-auto">
                     <div className="flex items-center justify-between text-sm mb-3">
-                      <span className="text-gray-500 font-medium">
+                      <span className="text-gray-500 dark:text-gray-400 font-medium">
                         Min. ₹{restaurant.minimumOrder || 100}
                       </span>
                     </div>

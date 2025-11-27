@@ -102,7 +102,7 @@ const RestaurantPage = () => {
 
   if (loading || !restaurant) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <Navbar />
         <div className="flex justify-center items-center h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
@@ -112,11 +112,11 @@ const RestaurantPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       <Navbar />
 
       {/* Restaurant Header - Enhanced */}
-      <div className="bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
+      <div className="bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 transition-colors duration-300">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Restaurant Image */}
@@ -126,7 +126,7 @@ const RestaurantPage = () => {
                 alt={restaurant.name}
                 className="w-full md:w-80 h-64 object-cover rounded-2xl shadow-2xl transform group-hover:scale-105 transition-transform duration-300"
               />
-              <div className="absolute top-4 left-4 bg-white px-3 py-1.5 rounded-full shadow-lg flex items-center space-x-1">
+              <div className="absolute top-4 left-4 bg-white dark:bg-gray-700 px-3 py-1.5 rounded-full shadow-lg flex items-center space-x-1">
                 <Award className="w-4 h-4 text-red-600" />
                 <span className="text-sm font-bold text-red-600">{restaurant.pricing || '$$'}</span>
               </div>
@@ -143,14 +143,14 @@ const RestaurantPage = () => {
             <div className="flex-1">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+                  <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2 bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
                     {restaurant.name}
                   </h1>
-                  <p className="text-lg text-gray-700 mb-2 font-medium">
+                  <p className="text-lg text-gray-700 dark:text-gray-300 mb-2 font-medium">
                     {restaurant.cuisines?.join(' • ')}
                   </p>
                   {restaurant.description && (
-                    <p className="text-gray-600 text-sm max-w-2xl">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm max-w-2xl">
                       {restaurant.description}
                     </p>
                   )}
@@ -159,53 +159,53 @@ const RestaurantPage = () => {
 
               {/* Stats - Enhanced */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 mt-6">
-                <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+                <div className="bg-white dark:bg-gray-700 rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
                   <div className="flex items-center space-x-2 mb-1">
                     <Star className="w-5 h-5 text-yellow-500 fill-current" />
-                    <span className="font-bold text-xl text-gray-900">
+                    <span className="font-bold text-xl text-gray-900 dark:text-white">
                       {restaurant.rating?.average?.toFixed(1) || '4.0'}
                     </span>
                   </div>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
                     {restaurant.rating?.count || 0} ratings
                   </span>
                 </div>
 
-                <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+                <div className="bg-white dark:bg-gray-700 rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
                   <div className="flex items-center space-x-2 mb-1">
                     <Clock className="w-5 h-5 text-red-500" />
-                    <span className="font-bold text-xl text-gray-900">
+                    <span className="font-bold text-xl text-gray-900 dark:text-white">
                       {restaurant.deliveryTime?.min}-{restaurant.deliveryTime?.max}
                     </span>
                   </div>
-                  <span className="text-sm text-gray-500">mins</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">mins</span>
                 </div>
 
-                <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+                <div className="bg-white dark:bg-gray-700 rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
                   <div className="flex items-center space-x-2 mb-1">
                     <MapPin className="w-5 h-5 text-blue-500" />
-                    <span className="font-bold text-lg text-gray-900">
+                    <span className="font-bold text-lg text-gray-900 dark:text-white">
                       {restaurant.location?.city || restaurant.address?.city || 'Madurai'}
                     </span>
                   </div>
-                  <span className="text-sm text-gray-500">location</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">location</span>
                 </div>
 
-                <div className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
+                <div className="bg-white dark:bg-gray-700 rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow">
                   <div className="flex items-center space-x-2 mb-1">
                     <Phone className="w-5 h-5 text-green-500" />
-                    <span className="font-bold text-sm text-gray-900">
+                    <span className="font-bold text-sm text-gray-900 dark:text-white">
                       {restaurant.contactInfo?.phone || restaurant.contactNumber || 'N/A'}
                     </span>
                   </div>
-                  <span className="text-sm text-gray-500">contact</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">contact</span>
                 </div>
               </div>
 
               {/* Additional Info */}
               {restaurant.minimumOrder && (
-                <div className="bg-white border-l-4 border-red-500 rounded-lg p-4 shadow-sm">
-                  <p className="text-sm text-gray-700">
+                <div className="bg-white dark:bg-gray-700 border-l-4 border-red-500 rounded-lg p-4 shadow-sm">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
                     <span className="font-semibold">Minimum Order:</span> ₹{restaurant.minimumOrder} •
                     <span className="font-semibold ml-2">Delivery Fee:</span> ₹{restaurant.deliveryFee || 0}
                   </p>
@@ -217,7 +217,7 @@ const RestaurantPage = () => {
           {/* Offers Section */}
           {restaurant.offers && restaurant.offers.length > 0 && (
             <div className="mt-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
                 <Award className="w-6 h-6 mr-2 text-green-600" />
                 Available Offers
               </h3>
@@ -235,11 +235,11 @@ const RestaurantPage = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Category Filter - Enhanced */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
             <Leaf className="w-6 h-6 mr-2 text-green-600" />
             Our Menu
           </h2>
-          <div className="sticky top-16 bg-white bg-opacity-95 backdrop-blur-sm py-4 z-30 rounded-2xl shadow-lg px-4">
+          <div className="sticky top-16 bg-white dark:bg-gray-800 bg-opacity-95 backdrop-blur-sm py-4 z-30 rounded-2xl shadow-lg px-4 transition-colors duration-300">
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {categories.map((category) => (
                 <button
@@ -248,7 +248,7 @@ const RestaurantPage = () => {
                   className={`px-6 py-3 rounded-full whitespace-nowrap transition-all font-semibold transform hover:scale-105 ${
                     selectedCategory === category
                       ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
                   {category}
@@ -261,10 +261,10 @@ const RestaurantPage = () => {
         {/* Menu Items - Enhanced */}
         {filteredMenuItems.length === 0 ? (
           <div className="text-center py-20">
-            <div className="bg-white rounded-2xl shadow-lg p-12 max-w-md mx-auto">
-              <ShoppingCart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 text-xl font-semibold">No items available</p>
-              <p className="text-gray-400 text-sm mt-2">Check back later for delicious items!</p>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 max-w-md mx-auto">
+              <ShoppingCart className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400 text-xl font-semibold">No items available</p>
+              <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">Check back later for delicious items!</p>
             </div>
           </div>
         ) : (
@@ -272,7 +272,7 @@ const RestaurantPage = () => {
             {filteredMenuItems.map((item) => (
               <div
                 key={item._id}
-                className="bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 p-4 md:p-6 border border-gray-100 transform hover:-translate-y-1"
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 p-4 md:p-6 border border-gray-100 dark:border-gray-700 transform hover:-translate-y-1"
               >
                 <div className="flex flex-col sm:flex-row gap-4 md:gap-6">
                   {/* Item Details */}
@@ -289,11 +289,11 @@ const RestaurantPage = () => {
                               }`}></span>
                             </div>
                           )}
-                          <h3 className="text-lg md:text-xl font-bold text-gray-900 truncate">
+                          <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white truncate">
                             {item.name}
                           </h3>
                         </div>
-                        <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
+                        <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-2">
                           {item.description}
                         </p>
                       </div>
@@ -301,16 +301,16 @@ const RestaurantPage = () => {
 
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-4">
                       <div className="flex items-center flex-wrap gap-2">
-                        <span className="text-xl md:text-2xl font-bold text-gray-900">
+                        <span className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                           ₹{item.price}
                         </span>
                         {item.discountPercentage > 0 && (
-                          <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">
+                          <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold px-2 py-1 rounded-full">
                             {item.discountPercentage}% OFF
                           </span>
                         )}
                         {item.preparationTime && (
-                          <span className="text-xs md:text-sm text-gray-500 flex items-center">
+                          <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 flex items-center">
                             <Clock className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                             {item.preparationTime} mins
                           </span>
@@ -320,19 +320,19 @@ const RestaurantPage = () => {
                       {item.isAvailable ? (
                         <div className="flex items-center space-x-2 md:space-x-3">
                           {/* Quantity Selector */}
-                          <div className="flex items-center space-x-2 bg-gray-100 rounded-xl px-2 md:px-3 py-2 shadow-inner">
+                          <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-xl px-2 md:px-3 py-2 shadow-inner">
                             <button
                               onClick={() => updateQuantity(item._id, -1)}
-                              className="text-gray-600 hover:text-red-600 transition-colors p-1"
+                              className="text-gray-600 dark:text-gray-400 hover:text-red-600 transition-colors p-1"
                             >
                               <Minus className="w-4 h-4" />
                             </button>
-                            <span className="font-bold text-base md:text-lg w-6 md:w-8 text-center">
+                            <span className="font-bold text-base md:text-lg w-6 md:w-8 text-center text-gray-900 dark:text-white">
                               {quantities[item._id] || 1}
                             </span>
                             <button
                               onClick={() => updateQuantity(item._id, 1)}
-                              className="text-gray-600 hover:text-red-600 transition-colors p-1"
+                              className="text-gray-600 dark:text-gray-400 hover:text-red-600 transition-colors p-1"
                             >
                               <Plus className="w-4 h-4" />
                             </button>
@@ -348,7 +348,7 @@ const RestaurantPage = () => {
                           </button>
                         </div>
                       ) : (
-                        <span className="bg-red-100 text-red-600 font-bold px-3 md:px-4 py-2 rounded-xl text-sm md:text-base">
+                        <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-bold px-3 md:px-4 py-2 rounded-xl text-sm md:text-base">
                           Not Available
                         </span>
                       )}
@@ -363,8 +363,8 @@ const RestaurantPage = () => {
                       className="w-full sm:w-32 md:w-40 h-32 md:h-40 object-cover rounded-2xl flex-shrink-0 shadow-lg"
                     />
                   ) : (
-                    <div className="w-full sm:w-32 md:w-40 h-32 md:h-40 bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl flex-shrink-0 flex items-center justify-center">
-                      <Leaf className="w-10 h-10 md:w-12 md:h-12 text-gray-400" />
+                    <div className="w-full sm:w-32 md:w-40 h-32 md:h-40 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-2xl flex-shrink-0 flex items-center justify-center">
+                      <Leaf className="w-10 h-10 md:w-12 md:h-12 text-gray-400 dark:text-gray-500" />
                     </div>
                   )}
                 </div>

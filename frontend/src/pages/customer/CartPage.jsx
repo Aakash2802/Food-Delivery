@@ -75,15 +75,15 @@ const CartPage = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <Navbar />
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-md mx-auto text-center">
-            <ShoppingBag className="w-24 h-24 mx-auto text-gray-300 mb-6" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <ShoppingBag className="w-24 h-24 mx-auto text-gray-300 dark:text-gray-600 mb-6" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               Your cart is empty
             </h2>
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
               Add items from a restaurant to get started
             </p>
             <button
@@ -99,14 +99,14 @@ const CartPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <Navbar />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Your Cart</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Your Cart</h1>
             <button
               onClick={handleClearCart}
               className="text-red-600 hover:text-red-700 flex items-center space-x-2"
@@ -121,11 +121,11 @@ const CartPage = () => {
             <div className="lg:col-span-2 space-y-4">
               {/* Restaurant Info */}
               {restaurant && (
-                <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-                  <h3 className="font-bold text-lg text-gray-900">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-4">
+                  <h3 className="font-bold text-lg text-gray-900 dark:text-white">
                     {restaurant.name}
                   </h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {getItemCount()} {getItemCount() === 1 ? 'item' : 'items'}
                   </p>
                 </div>
@@ -135,7 +135,7 @@ const CartPage = () => {
               {items.map((item, index) => (
                 <div
                   key={`${item.menuItemId}-${index}`}
-                  className="bg-white rounded-lg shadow-sm p-4"
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4"
                 >
                   <div className="flex gap-4">
                     {/* Item Image */}
@@ -151,11 +151,11 @@ const CartPage = () => {
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <h3 className="font-bold text-gray-900">
+                          <h3 className="font-bold text-gray-900 dark:text-white">
                             {item.name}
                           </h3>
                           {item.customizations && item.customizations.length > 0 && (
-                            <p className="text-sm text-gray-600 mt-1">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                               {item.customizations.map(c => c.name).join(', ')}
                             </p>
                           )}
@@ -169,24 +169,24 @@ const CartPage = () => {
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold text-gray-900">
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">
                           ₹{item.price * item.quantity}
                         </span>
 
                         {/* Quantity Controls */}
-                        <div className="flex items-center space-x-3 bg-gray-100 rounded-lg px-3 py-2">
+                        <div className="flex items-center space-x-3 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2">
                           <button
                             onClick={() => handleQuantityChange(index, -1)}
-                            className="text-gray-600 hover:text-red-600"
+                            className="text-gray-600 dark:text-gray-400 hover:text-red-600"
                           >
                             <Minus className="w-4 h-4" />
                           </button>
-                          <span className="font-semibold w-6 text-center">
+                          <span className="font-semibold w-6 text-center text-gray-900 dark:text-white">
                             {item.quantity}
                           </span>
                           <button
                             onClick={() => handleQuantityChange(index, 1)}
-                            className="text-gray-600 hover:text-red-600"
+                            className="text-gray-600 dark:text-gray-400 hover:text-red-600"
                           >
                             <Plus className="w-4 h-4" />
                           </button>
@@ -200,29 +200,29 @@ const CartPage = () => {
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 sticky top-24">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                   Bill Details
                 </h3>
 
                 <div className="space-y-3 mb-4">
-                  <div className="flex justify-between text-gray-700">
+                  <div className="flex justify-between text-gray-700 dark:text-gray-300">
                     <span>Subtotal</span>
                     <span>₹{subtotal.toFixed(2)}</span>
                   </div>
 
-                  <div className="flex justify-between text-gray-700">
+                  <div className="flex justify-between text-gray-700 dark:text-gray-300">
                     <span>Delivery Fee</span>
                     <span>₹{deliveryFee.toFixed(2)}</span>
                   </div>
 
-                  <div className="flex justify-between text-gray-700">
+                  <div className="flex justify-between text-gray-700 dark:text-gray-300">
                     <span>GST (5%)</span>
                     <span>₹{gst.toFixed(2)}</span>
                   </div>
 
-                  <div className="border-t pt-3">
-                    <div className="flex justify-between text-lg font-bold text-gray-900">
+                  <div className="border-t dark:border-gray-700 pt-3">
+                    <div className="flex justify-between text-lg font-bold text-gray-900 dark:text-white">
                       <span>Total</span>
                       <span>₹{total.toFixed(2)}</span>
                     </div>
@@ -231,7 +231,7 @@ const CartPage = () => {
 
                 {/* Promo Code */}
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Promo Code
                   </label>
                   <div className="flex gap-2">
@@ -239,7 +239,7 @@ const CartPage = () => {
                       type="text"
                       value={promoCode}
                       onChange={(e) => setPromoCode(e.target.value)}
-                      className="input flex-1"
+                      className="input flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       placeholder="Enter code"
                     />
                     <button
@@ -260,7 +260,7 @@ const CartPage = () => {
                   <ArrowRight className="w-5 h-5" />
                 </button>
 
-                <p className="text-xs text-gray-500 text-center mt-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
                   You can apply promo codes at checkout
                 </p>
               </div>

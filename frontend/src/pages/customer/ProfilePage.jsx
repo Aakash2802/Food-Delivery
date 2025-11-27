@@ -78,12 +78,12 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <Navbar />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">My Profile</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">My Profile</h1>
 
           {/* Loyalty Card - Full Width */}
           {user?.role === 'customer' && (
@@ -95,29 +95,29 @@ const ProfilePage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Profile Info */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
                 <div className="text-center mb-6">
-                  <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-24 h-24 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                     <User className="w-12 h-12 text-red-600" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900">{user?.name}</h2>
-                  <p className="text-gray-600 capitalize">{user?.role}</p>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">{user?.name}</h2>
+                  <p className="text-gray-600 dark:text-gray-400 capitalize">{user?.role}</p>
                 </div>
 
                 {!editing ? (
                   <>
                     <div className="space-y-4">
-                      <div className="flex items-center space-x-3 text-gray-700">
+                      <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
                         <Mail className="w-5 h-5 text-gray-400" />
                         <span className="text-sm">{user?.email}</span>
                       </div>
 
-                      <div className="flex items-center space-x-3 text-gray-700">
+                      <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
                         <Phone className="w-5 h-5 text-gray-400" />
                         <span className="text-sm">{user?.phone || 'Not provided'}</span>
                       </div>
 
-                      <div className="flex items-center space-x-3 text-gray-700">
+                      <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
                         <Package className="w-5 h-5 text-gray-400" />
                         <span className="text-sm">{orders.length} Total Orders</span>
                       </div>
@@ -193,9 +193,9 @@ const ProfilePage = () => {
 
             {/* Order History */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-gray-900">Order History</h2>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Order History</h2>
                   {orders.length > 5 && (
                     <button
                       onClick={() => navigate('/orders')}
@@ -213,8 +213,8 @@ const ProfilePage = () => {
                   </div>
                 ) : orders.length === 0 ? (
                   <div className="text-center py-12">
-                    <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                    <p className="text-gray-500">No orders yet</p>
+                    <Package className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400">No orders yet</p>
                     <button
                       onClick={() => navigate('/')}
                       className="btn btn-primary mt-4"
@@ -228,17 +228,17 @@ const ProfilePage = () => {
                       <div
                         key={order._id}
                         onClick={() => navigate(`/order/${order._id}`)}
-                        className="border border-gray-200 rounded-lg p-4 hover:border-red-600 cursor-pointer transition-colors"
+                        className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-red-600 cursor-pointer transition-colors"
                       >
                         <div className="flex justify-between items-start mb-3">
                           <div>
-                            <p className="font-bold text-gray-900">
+                            <p className="font-bold text-gray-900 dark:text-white">
                               Order #{order.orderNumber}
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
                               {order.restaurantId?.name || 'Restaurant'}
                             </p>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               {new Date(order.createdAt).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'short',
@@ -255,10 +255,10 @@ const ProfilePage = () => {
                         </div>
 
                         <div className="flex justify-between items-center">
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             {order.items?.length} {order.items?.length === 1 ? 'item' : 'items'}
                           </p>
-                          <p className="font-bold text-gray-900">
+                          <p className="font-bold text-gray-900 dark:text-white">
                             ₹{order.pricing?.total?.toFixed(2)}
                           </p>
                         </div>
