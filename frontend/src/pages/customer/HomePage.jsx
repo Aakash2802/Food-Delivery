@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, Star, Clock, Filter, Award, TrendingUp, Zap, ChefHat, UtensilsCrossed, Leaf, Percent, ChevronDown, Sparkles, Check } from 'lucide-react';
+import { Search, Star, Clock, Filter, Award, TrendingUp, Zap, ChefHat, UtensilsCrossed, Percent, ChevronDown, Sparkles, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { restaurantAPI, menuAPI, promoAPI } from '../../services/api';
 import Navbar from '../../components/Navbar';
@@ -8,7 +8,7 @@ import SearchBar from '../../components/SearchBar';
 import OfferBadge from '../../components/OfferBadge';
 import useCartStore from '../../store/useCartStore';
 import useParallax from '../../hooks/useParallax';
-import { ShoppingCart, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -820,23 +820,15 @@ const HomePage = () => {
                     </div>
                   </div>
 
-                  {/* Bottom Left Badges */}
-                  <div className="absolute bottom-4 left-4 flex flex-wrap gap-1.5">
-                    {/* Pure Veg Badge */}
-                    {(restaurant.isVeg || restaurant.cuisines?.some(c => c.toLowerCase().includes('veg'))) && (
-                      <span className="bg-green-600 text-white px-2 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
-                        <Leaf className="w-3 h-3" />
-                        Pure Veg
-                      </span>
-                    )}
-                    {/* Fast Delivery Badge */}
-                    {(restaurant.deliveryTime?.min || 30) <= 25 && (
+                  {/* Bottom Left Badge - Fast Delivery only */}
+                  {(restaurant.deliveryTime?.min || 30) <= 25 && (
+                    <div className="absolute bottom-4 left-4">
                       <span className="bg-blue-600 text-white px-2 py-1 rounded-full font-bold text-xs shadow-lg flex items-center gap-1">
                         <Zap className="w-3 h-3" />
                         Fast
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
                   {!restaurant.isOpen && (
                     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
