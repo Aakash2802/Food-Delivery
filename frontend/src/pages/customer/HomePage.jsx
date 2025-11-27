@@ -76,8 +76,23 @@ const HomePage = () => {
     const fetchWithSearch = async () => {
       try {
         setLoading(true);
-        const queryParams = { ...filters };
+        const queryParams = {};
 
+        // Only add non-empty filter values
+        if (filters.latitude && filters.longitude) {
+          queryParams.latitude = filters.latitude;
+          queryParams.longitude = filters.longitude;
+          queryParams.radius = filters.radius;
+        }
+        if (filters.cuisines && filters.cuisines !== 'All') {
+          queryParams.cuisines = filters.cuisines;
+        }
+        if (filters.minRating > 0) {
+          queryParams.minRating = filters.minRating;
+        }
+        if (filters.pricing && filters.pricing !== 'All') {
+          queryParams.pricing = filters.pricing;
+        }
         if (query && query.trim()) {
           queryParams.search = query.trim();
         }
