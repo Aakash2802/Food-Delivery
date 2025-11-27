@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, Star, Clock, Filter, Award, TrendingUp, Zap, ChefHat, UtensilsCrossed } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { restaurantAPI } from '../../services/api';
+import { restaurantAPI, menuAPI } from '../../services/api';
 import Navbar from '../../components/Navbar';
 import SearchBar from '../../components/SearchBar';
 import OfferBadge from '../../components/OfferBadge';
@@ -12,6 +12,8 @@ const HomePage = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [filters, setFilters] = useState({
     cuisines: '',
     minRating: 0,
@@ -70,46 +72,40 @@ const HomePage = () => {
   };
 
   const handleSearch = (query) => {
-    // Update search query and trigger restaurant fetch
     setSearchQuery(query);
-    // Fetch restaurants with search query
-    const fetchWithSearch = async () => {
+
+    if (!query || !query.trim()) {
+      // Clear search results and show all restaurants
+      setSearchResults([]);
+      setIsSearching(false);
+      fetchRestaurants();
+      return;
+    }
+
+    // Search for dishes like Swiggy
+    const fetchDishes = async () => {
       try {
         setLoading(true);
-        const queryParams = {};
-
-        // Only add non-empty filter values
-        if (filters.latitude && filters.longitude) {
-          queryParams.latitude = filters.latitude;
-          queryParams.longitude = filters.longitude;
-          queryParams.radius = filters.radius;
-        }
-        if (filters.cuisines && filters.cuisines !== 'All') {
-          queryParams.cuisines = filters.cuisines;
-        }
-        if (filters.minRating > 0) {
-          queryParams.minRating = filters.minRating;
-        }
-        if (filters.pricing && filters.pricing !== 'All') {
-          queryParams.pricing = filters.pricing;
-        }
-        if (query && query.trim()) {
-          queryParams.search = query.trim();
-        }
-
-        const response = await restaurantAPI.getAll(queryParams);
-        const restaurantData = Array.isArray(response.data)
-          ? response.data
-          : (response.data?.restaurants || response.restaurants || []);
-        setRestaurants(restaurantData);
+        setIsSearching(true);
+        const response = await menuAPI.search(query.trim());
+        const dishes = response.data?.menuItems || [];
+        setSearchResults(dishes);
       } catch (error) {
-        toast.error('Failed to load restaurants');
+        toast.error('Failed to search dishes');
         console.error(error);
+        setSearchResults([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchWithSearch();
+    fetchDishes();
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setIsSearching(false);
+    fetchRestaurants();
   };
 
   const handleCuisineFilter = (cuisine) => {
@@ -332,7 +328,91 @@ const HomePage = () => {
         </div>
       )}
 
+      {/* Search Results - Dishes (Like Swiggy) */}
+      {isSearching && (
+        <div className="container mx-auto px-4 py-12">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 flex items-center">
+                <Search className="w-8 h-8 mr-3 text-red-600" />
+                Search Results for "{searchQuery}"
+              </h2>
+              <p className="text-gray-600 mt-2">
+                {searchResults.length} {searchResults.length === 1 ? 'dish' : 'dishes'} found
+              </p>
+            </div>
+            <button
+              onClick={clearSearch}
+              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all font-bold"
+            >
+              Clear Search
+            </button>
+          </div>
+
+          {searchResults.length === 0 ? (
+            <div className="text-center py-20 animate-fade-in">
+              <div className="bg-white rounded-3xl shadow-xl p-16 max-w-md mx-auto">
+                <Search className="w-24 h-24 text-gray-300 mx-auto mb-6" />
+                <p className="text-gray-500 text-2xl font-bold mb-3">No dishes found</p>
+                <p className="text-gray-400 text-lg">Try searching for something else</p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {searchResults.map((dish, index) => (
+                <div
+                  key={dish._id}
+                  onClick={() => navigate(`/restaurant/${dish.restaurantId?._id}`)}
+                  className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer group"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  {/* Dish Image */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={dish.images?.[0] || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400'}
+                      alt={dish.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    {dish.isVeg ? (
+                      <span className="absolute top-3 left-3 bg-green-500 text-white px-2 py-1 rounded text-xs font-bold">VEG</span>
+                    ) : (
+                      <span className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">NON-VEG</span>
+                    )}
+                    <div className="absolute bottom-3 right-3 bg-white px-3 py-1 rounded-lg shadow-lg">
+                      <span className="text-lg font-bold text-green-600">₹{dish.price}</span>
+                    </div>
+                  </div>
+
+                  {/* Dish Info */}
+                  <div className="p-4">
+                    <h3 className="font-bold text-lg text-gray-900 mb-1 truncate">{dish.name}</h3>
+                    <p className="text-gray-500 text-sm mb-2 line-clamp-2">{dish.description}</p>
+
+                    {/* Restaurant Info */}
+                    <div className="flex items-center pt-3 border-t border-gray-100">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-red-600 truncate">
+                          {dish.restaurantId?.name || 'Restaurant'}
+                        </p>
+                        <div className="flex items-center text-xs text-gray-500 mt-1">
+                          <Star className="w-3 h-3 text-yellow-500 mr-1" />
+                          <span>{dish.restaurantId?.rating?.average || '4.0'}</span>
+                          <span className="mx-2">•</span>
+                          <Clock className="w-3 h-3 mr-1" />
+                          <span>{dish.preparationTime || 20} min</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Restaurants Grid */}
+      {!isSearching && (
       <div className="container mx-auto px-4 py-12">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -508,6 +588,7 @@ const HomePage = () => {
           </div>
         )}
       </div>
+      )}
 
       {/* Footer - Developer Credit */}
       <footer className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-4 mt-12">
