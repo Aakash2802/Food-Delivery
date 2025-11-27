@@ -72,7 +72,7 @@ export const menuAPI = {
   update: (itemId, data) => api.put(`/menu/vendor/menu/${itemId}`, data),
   delete: (itemId) => api.delete(`/menu/vendor/menu/${itemId}`),
   toggleAvailability: (itemId, data) => api.patch(`/menu/vendor/menu/${itemId}/availability`, data),
-  search: (query) => api.get('/menu/search', { params: { search: query } }),
+  search: (query) => api.get('/menu/search', { params: { query: query } }),
 };
 
 // Order API
