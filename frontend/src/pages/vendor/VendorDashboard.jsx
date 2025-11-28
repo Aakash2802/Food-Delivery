@@ -124,7 +124,7 @@ const VendorDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
         <div className="flex justify-center items-center h-96">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-red-600"></div>
@@ -135,17 +135,17 @@ const VendorDashboard = () => {
 
   if (!restaurant) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <Navbar />
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-md mx-auto text-center animate-fade-in">
-            <div className="bg-gradient-to-br from-red-100 to-orange-100 p-6 rounded-full w-32 h-32 mx-auto mb-6 flex items-center justify-center">
+            <div className="bg-gradient-to-br from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30 p-6 rounded-full w-32 h-32 mx-auto mb-6 flex items-center justify-center">
               <Store className="w-16 h-16 text-red-600" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
               No Restaurant Found
             </h2>
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
               You need to create a restaurant to start receiving orders
             </p>
             <button
@@ -213,7 +213,7 @@ const VendorDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 overflow-x-hidden w-full">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-x-hidden w-full">
       <Navbar />
 
       <div className="container mx-auto px-4 py-8 max-w-full">
@@ -224,7 +224,7 @@ const VendorDashboard = () => {
               <h1 className="text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent mb-2">
                 Vendor Dashboard
               </h1>
-              <p className="text-gray-600 flex items-center">
+              <p className="text-gray-600 dark:text-gray-400 flex items-center">
                 <Store className="w-4 h-4 mr-2" />
                 {restaurant.name}
               </p>
@@ -244,7 +244,7 @@ const VendorDashboard = () => {
 
               <button
                 onClick={() => navigate('/vendor/menu')}
-                className="bg-white text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all flex items-center space-x-2 shadow-md"
+                className="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center space-x-2 shadow-md"
               >
                 <Settings className="w-4 h-4" />
                 <span>Manage Menu</span>
@@ -258,20 +258,20 @@ const VendorDashboard = () => {
           {statsCards.map((stat, index) => (
             <div
               key={stat.title}
-              className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 card-hover animate-scale-in cursor-pointer"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 card-hover animate-scale-in cursor-pointer"
               style={{ animationDelay: `${index * 0.1}s` }}
               onClick={stat.action}
             >
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-gray-600 text-sm font-medium mb-1">{stat.title}</p>
-                  <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                  <p className="text-sm text-gray-500 mt-1 flex items-center">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">{stat.title}</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center">
                     {stat.title === "Today's Revenue" && <TrendingUp className="w-3 h-3 mr-1" />}
                     {stat.subtitle}
                   </p>
                 </div>
-                <div className={`${stat.iconBg} p-3 rounded-xl`}>
+                <div className={`${stat.iconBg} dark:bg-opacity-20 p-3 rounded-xl`}>
                   <stat.icon className={`w-8 h-8 ${stat.iconColor}`} />
                 </div>
               </div>
@@ -281,22 +281,22 @@ const VendorDashboard = () => {
         </div>
 
         {/* Restaurant Status Banner */}
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 mb-8 border border-purple-200 animate-fade-in">
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl p-6 mb-8 border border-purple-200 dark:border-purple-800 animate-fade-in">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-3 rounded-xl">
-                <Activity className="w-6 h-6 text-purple-600" />
+              <div className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-800/50 dark:to-pink-800/50 p-3 rounded-xl">
+                <Activity className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 text-lg">Restaurant Status</h3>
-                <p className="text-gray-600 text-sm">
+                <h3 className="font-bold text-gray-900 dark:text-white text-lg">Restaurant Status</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Your restaurant is currently {restaurant.isOpen ? 'accepting' : 'not accepting'} orders
                 </p>
               </div>
             </div>
             <div className="text-right">
               <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full ${
-                restaurant.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                restaurant.isOpen ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
               }`}>
                 <div className={`w-2 h-2 rounded-full ${restaurant.isOpen ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
                 <span className="font-semibold text-sm">
@@ -308,15 +308,15 @@ const VendorDashboard = () => {
         </div>
 
         {/* Recent Orders */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 animate-fade-in">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 animate-fade-in">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
               <Package className="w-6 h-6 mr-2 text-red-600" />
               Recent Orders
             </h2>
             <button
               onClick={() => navigate('/vendor/orders')}
-              className="text-red-600 hover:text-red-700 font-medium flex items-center space-x-2 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors"
+              className="text-red-600 hover:text-red-700 font-medium flex items-center space-x-2 hover:bg-red-50 dark:hover:bg-red-900/20 px-4 py-2 rounded-lg transition-colors"
             >
               <span>View All</span>
               <Eye className="w-4 h-4" />
@@ -325,11 +325,11 @@ const VendorDashboard = () => {
 
           {recentOrders.length === 0 ? (
             <div className="text-center py-16">
-              <div className="bg-gray-100 rounded-full p-6 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+              <div className="bg-gray-100 dark:bg-gray-700 rounded-full p-6 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
                 <Package className="w-12 h-12 text-gray-400" />
               </div>
-              <p className="text-gray-500 text-lg">No orders yet</p>
-              <p className="text-gray-400 text-sm mt-2">Orders will appear here when customers place them</p>
+              <p className="text-gray-500 dark:text-gray-400 text-lg">No orders yet</p>
+              <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">Orders will appear here when customers place them</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -337,15 +337,15 @@ const VendorDashboard = () => {
                 <div
                   key={order._id}
                   onClick={() => navigate(`/vendor/orders`)}
-                  className="border-2 border-gray-200 rounded-xl p-5 hover:border-red-600 cursor-pointer transition-all hover:shadow-md animate-slide-in-right"
+                  className="border-2 border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-red-600 cursor-pointer transition-all hover:shadow-md animate-slide-in-right dark:bg-gray-700/50"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <p className="font-bold text-gray-900 text-lg">
+                      <p className="font-bold text-gray-900 dark:text-white text-lg">
                         Order #{order.orderNumber}
                       </p>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         {order.items?.length} items • {new Date(order.createdAt).toLocaleString()}
                       </p>
                     </div>
@@ -354,11 +354,11 @@ const VendorDashboard = () => {
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                    <p className="text-sm text-gray-500">
+                  <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-600">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Order Total
                     </p>
-                    <p className="font-bold text-xl text-gray-900">
+                    <p className="font-bold text-xl text-gray-900 dark:text-white">
                       ₹{order.pricing?.total?.toFixed(2)}
                     </p>
                   </div>

@@ -150,7 +150,7 @@ const VendorOrders = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
         <div className="flex justify-center items-center h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
@@ -160,12 +160,12 @@ const VendorOrders = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Orders</h1>
 
           {/* Status Filter */}
           <div className="flex items-center space-x-2">
@@ -186,23 +186,23 @@ const VendorOrders = () => {
 
         {/* Orders List */}
         {filteredOrders.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-            <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 text-lg">No orders found</p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
+            <Package className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+            <p className="text-gray-500 dark:text-gray-400 text-lg">No orders found</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
             {filteredOrders.map((order) => (
               <div
                 key={order._id}
-                className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                       Order #{order.orderNumber}
                     </h3>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       {new Date(order.createdAt).toLocaleString()}
                     </p>
                   </div>
@@ -214,37 +214,37 @@ const VendorOrders = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <p className="text-sm text-gray-600 mb-2">Customer</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Customer</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
                       {order.customerId?.name || order.contactPhone || 'Customer'}
                     </p>
                     {(order.customerId?.phone || order.contactPhone) && (
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                         {order.customerId?.phone || order.contactPhone}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <p className="text-sm text-gray-600 mb-2">Delivery Address</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Delivery Address</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
                       {order.deliveryAddress?.street || order.deliveryAddress?.label || 'N/A'}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       {order.deliveryAddress?.city || order.deliveryAddress?.area || ''}
                     </p>
                   </div>
                 </div>
 
-                <div className="border-t pt-4 mb-4">
-                  <p className="text-sm text-gray-600 mb-2">Items</p>
+                <div className="border-t dark:border-gray-700 pt-4 mb-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Items</p>
                   <div className="space-y-2">
                     {order.items?.map((item, index) => (
                       <div key={index} className="flex justify-between text-sm">
-                        <span className="text-gray-900">
+                        <span className="text-gray-900 dark:text-white">
                           {item.quantity}x {item.menuItemId?.name || item.name}
                         </span>
-                        <span className="font-medium text-gray-900">
+                        <span className="font-medium text-gray-900 dark:text-white">
                           ₹{(item.price * item.quantity).toFixed(2)}
                         </span>
                       </div>
@@ -252,10 +252,10 @@ const VendorOrders = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t">
+                <div className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
                   <div>
-                    <p className="text-sm text-gray-600">Total Amount</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Amount</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       ₹{order.pricing?.total?.toFixed(2)}
                     </p>
                   </div>
@@ -314,14 +314,14 @@ const VendorOrders = () => {
       {/* Order Details Modal */}
       {showModal && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Order #{selectedOrder.orderNumber}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <XCircle className="w-6 h-6" />
               </button>
@@ -330,7 +330,7 @@ const VendorOrders = () => {
             <div className="space-y-6">
               {/* Status */}
               <div>
-                <p className="text-sm text-gray-600 mb-2">Status</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Status</p>
                 <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusColor(selectedOrder.status)}`}>
                   {selectedOrder.status.replace(/_/g, ' ').toUpperCase()}
                 </span>
@@ -338,17 +338,17 @@ const VendorOrders = () => {
 
               {/* Customer Info */}
               <div>
-                <p className="text-sm text-gray-600 mb-2">Customer Details</p>
-                <p className="font-medium text-gray-900">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Customer Details</p>
+                <p className="font-medium text-gray-900 dark:text-white">
                   {selectedOrder.customerId?.name || 'Customer'}
                 </p>
                 {selectedOrder.customerId?.email && (
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {selectedOrder.customerId.email}
                   </p>
                 )}
                 {(selectedOrder.customerId?.phone || selectedOrder.contactPhone) && (
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {selectedOrder.customerId?.phone || selectedOrder.contactPhone}
                   </p>
                 )}
@@ -356,17 +356,17 @@ const VendorOrders = () => {
 
               {/* Items */}
               <div>
-                <p className="text-sm text-gray-600 mb-2">Order Items</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Order Items</p>
                 <div className="space-y-2">
                   {selectedOrder.items?.map((item, index) => (
-                    <div key={index} className="flex justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={index} className="flex justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-gray-900 dark:text-white">
                           {item.menuItemId?.name || item.name}
                         </p>
-                        <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Qty: {item.quantity}</p>
                       </div>
-                      <p className="font-semibold text-gray-900">
+                      <p className="font-semibold text-gray-900 dark:text-white">
                         ₹{(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
@@ -375,21 +375,21 @@ const VendorOrders = () => {
               </div>
 
               {/* Pricing */}
-              <div className="border-t pt-4">
+              <div className="border-t dark:border-gray-700 pt-4">
                 <div className="space-y-2">
-                  <div className="flex justify-between text-gray-700">
+                  <div className="flex justify-between text-gray-700 dark:text-gray-300">
                     <span>Subtotal</span>
                     <span>₹{selectedOrder.pricing?.subtotal?.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-gray-700">
+                  <div className="flex justify-between text-gray-700 dark:text-gray-300">
                     <span>Delivery Fee</span>
                     <span>₹{selectedOrder.pricing?.deliveryFee?.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-gray-700">
+                  <div className="flex justify-between text-gray-700 dark:text-gray-300">
                     <span>Tax</span>
                     <span>₹{selectedOrder.pricing?.tax?.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-xl font-bold text-gray-900 pt-2 border-t">
+                  <div className="flex justify-between text-xl font-bold text-gray-900 dark:text-white pt-2 border-t dark:border-gray-700">
                     <span>Total</span>
                     <span>₹{selectedOrder.pricing?.total?.toFixed(2)}</span>
                   </div>

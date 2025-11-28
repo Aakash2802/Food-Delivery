@@ -130,7 +130,7 @@ const PromoCodeManagement = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
         <div className="flex justify-center items-center h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
@@ -140,14 +140,14 @@ const PromoCodeManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Promo Code Management</h1>
-            <p className="text-gray-600 mt-1">Create and manage discount promo codes</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Promo Code Management</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Create and manage discount promo codes</p>
           </div>
           <button
             onClick={() => setShowModal(true)}
@@ -160,22 +160,22 @@ const PromoCodeManagement = () => {
 
         {/* Promo Codes List */}
         {promos.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-            <Tag className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 text-lg">No promo codes found</p>
-            <p className="text-gray-400 mt-2">Create your first promo code to get started</p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
+            <Tag className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+            <p className="text-gray-500 dark:text-gray-400 text-lg">No promo codes found</p>
+            <p className="text-gray-400 dark:text-gray-500 mt-2">Create your first promo code to get started</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {promos.map((promo) => (
               <div
                 key={promo._id}
-                className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
               >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900">{promo.code}</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{promo.code}</h3>
                     <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mt-2 ${getTypeColor(promo.type)}`}>
                       {promo.type === 'percentage' ? `${promo.value}% OFF` : `₹${promo.value} OFF`}
                     </span>
@@ -183,13 +183,13 @@ const PromoCodeManagement = () => {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleEdit(promo)}
-                      className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                      className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(promo._id)}
-                      className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                      className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -197,21 +197,21 @@ const PromoCodeManagement = () => {
                 </div>
 
                 {/* Description */}
-                <p className="text-gray-600 text-sm mb-4">{promo.description}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{promo.description}</p>
 
                 {/* Details */}
                 <div className="space-y-2 text-sm">
-                  <div className="flex items-center text-gray-700">
+                  <div className="flex items-center text-gray-700 dark:text-gray-300">
                     <Tag className="w-4 h-4 mr-2" />
                     <span>Min Order: ₹{promo.minOrderValue}</span>
                   </div>
                   {promo.maxDiscount && (
-                    <div className="flex items-center text-gray-700">
+                    <div className="flex items-center text-gray-700 dark:text-gray-300">
                       <Tag className="w-4 h-4 mr-2" />
                       <span>Max Discount: ₹{promo.maxDiscount}</span>
                     </div>
                   )}
-                  <div className="flex items-center text-gray-700">
+                  <div className="flex items-center text-gray-700 dark:text-gray-300">
                     <Calendar className="w-4 h-4 mr-2" />
                     <span>
                       Valid till: {new Date(promo.validUntil).toLocaleDateString()}
@@ -220,7 +220,7 @@ const PromoCodeManagement = () => {
                       )}
                     </span>
                   </div>
-                  <div className="flex items-center text-gray-700">
+                  <div className="flex items-center text-gray-700 dark:text-gray-300">
                     <Users className="w-4 h-4 mr-2" />
                     <span>
                       Used: {promo.usageCount || 0} / {promo.usageLimit?.total || 'Unlimited'}
@@ -229,13 +229,13 @@ const PromoCodeManagement = () => {
                 </div>
 
                 {/* Status */}
-                <div className="mt-4 pt-4 border-t flex items-center justify-between">
+                <div className="mt-4 pt-4 border-t dark:border-gray-700 flex items-center justify-between">
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    promo.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    promo.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                   }`}>
                     {promo.isActive ? 'Active' : 'Inactive'}
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {promo.applicableFor === 'all' ? 'All Users' : promo.applicableFor}
                   </span>
                 </div>
@@ -248,14 +248,14 @@ const PromoCodeManagement = () => {
       {/* Create/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {editingPromo ? 'Edit Promo Code' : 'Create Promo Code'}
               </h2>
               <button
                 onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -265,7 +265,7 @@ const PromoCodeManagement = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Code */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Promo Code *
                   </label>
                   <input
@@ -281,7 +281,7 @@ const PromoCodeManagement = () => {
 
                 {/* Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Discount Type *
                   </label>
                   <select
@@ -297,7 +297,7 @@ const PromoCodeManagement = () => {
 
                 {/* Value */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Discount Value *
                   </label>
                   <input
@@ -313,7 +313,7 @@ const PromoCodeManagement = () => {
 
                 {/* Min Order Value */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Min Order Value *
                   </label>
                   <input
@@ -330,7 +330,7 @@ const PromoCodeManagement = () => {
                 {/* Max Discount (for percentage) */}
                 {formData.type === 'percentage' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Max Discount Amount
                     </label>
                     <input
@@ -346,7 +346,7 @@ const PromoCodeManagement = () => {
 
                 {/* Valid From */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Valid From *
                   </label>
                   <input
@@ -360,7 +360,7 @@ const PromoCodeManagement = () => {
 
                 {/* Valid Until */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Valid Until *
                   </label>
                   <input
@@ -374,7 +374,7 @@ const PromoCodeManagement = () => {
 
                 {/* Total Usage Limit */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Total Usage Limit
                   </label>
                   <input
@@ -392,7 +392,7 @@ const PromoCodeManagement = () => {
 
                 {/* Per User Limit */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Per User Limit *
                   </label>
                   <input
@@ -411,7 +411,7 @@ const PromoCodeManagement = () => {
 
                 {/* Applicable For */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Applicable For *
                   </label>
                   <select
@@ -428,7 +428,7 @@ const PromoCodeManagement = () => {
 
                 {/* Description */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Description *
                   </label>
                   <textarea
@@ -450,7 +450,7 @@ const PromoCodeManagement = () => {
                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                     className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
                   />
-                  <label htmlFor="isActive" className="ml-2 text-sm text-gray-700">
+                  <label htmlFor="isActive" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                     Active
                   </label>
                 </div>

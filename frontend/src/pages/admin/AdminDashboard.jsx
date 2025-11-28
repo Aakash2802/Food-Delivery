@@ -37,7 +37,7 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
         <div className="flex justify-center items-center h-96">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-red-600"></div>
@@ -86,7 +86,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 overflow-x-hidden w-full">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-x-hidden w-full">
       <Navbar />
 
       <div className="container mx-auto px-4 py-8 max-w-full">
@@ -95,7 +95,7 @@ const AdminDashboard = () => {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent mb-2">
             Admin Dashboard
           </h1>
-          <p className="text-gray-600 flex items-center">
+          <p className="text-gray-600 dark:text-gray-400 flex items-center">
             <Activity className="w-4 h-4 mr-2" />
             Monitor and manage your food delivery platform
           </p>
@@ -106,19 +106,19 @@ const AdminDashboard = () => {
           {statsCards.map((stat, index) => (
             <div
               key={stat.title}
-              className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 card-hover animate-scale-in"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 card-hover animate-scale-in"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-gray-600 text-sm font-medium mb-1">{stat.title}</p>
-                  <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
-                  <p className="text-sm text-gray-500 mt-1 flex items-center">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">{stat.title}</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center">
                     {stat.subtitle.includes('₹') && <TrendingUp className="w-3 h-3 mr-1" />}
                     {stat.subtitle}
                   </p>
                 </div>
-                <div className={`${stat.iconBg} p-3 rounded-xl`}>
+                <div className={`${stat.iconBg} dark:bg-opacity-20 p-3 rounded-xl`}>
                   <stat.icon className={`w-8 h-8 ${stat.iconColor}`} />
                 </div>
               </div>
@@ -137,14 +137,14 @@ const AdminDashboard = () => {
           ].map((action, index) => (
             <div
               key={action.title}
-              className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 animate-slide-in-right"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 animate-slide-in-right"
               style={{ animationDelay: `${index * 0.15}s` }}
             >
               <div className={`inline-block p-3 rounded-xl bg-gradient-to-r ${action.color} mb-4`}>
                 <action.icon className="w-6 h-6 text-white" />
               </div>
-              <h3 className="font-bold text-gray-900 mb-2 text-lg">{action.title}</h3>
-              <p className="text-gray-600 text-sm mb-4">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-2 text-lg">{action.title}</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
                 {action.desc}
               </p>
               <button
@@ -158,49 +158,49 @@ const AdminDashboard = () => {
         </div>
 
         {/* Platform Overview */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 animate-fade-in">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 animate-fade-in">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
             <Activity className="w-6 h-6 mr-2 text-red-600" />
             Platform Overview
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Activity Stats */}
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-900">Active Users</h3>
-                <Activity className="w-5 h-5 text-blue-600" />
+                <h3 className="font-semibold text-gray-900 dark:text-white">Active Users</h3>
+                <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <p className="text-4xl font-bold text-blue-600 mb-2">{stats.activeDrivers || 0}</p>
-              <p className="text-sm text-gray-600">Drivers online now</p>
+              <p className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">{stats.activeDrivers || 0}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Drivers online now</p>
             </div>
 
-            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6">
+            <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-900">Pending Tasks</h3>
-                <Clock className="w-5 h-5 text-green-600" />
+                <h3 className="font-semibold text-gray-900 dark:text-white">Pending Tasks</h3>
+                <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
-              <p className="text-4xl font-bold text-green-600 mb-2">{stats.pendingApprovals || 0}</p>
-              <p className="text-sm text-gray-600">Awaiting approval</p>
+              <p className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">{stats.pendingApprovals || 0}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Awaiting approval</p>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6">
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-900">Success Rate</h3>
-                <CheckCircle className="w-5 h-5 text-purple-600" />
+                <h3 className="font-semibold text-gray-900 dark:text-white">Success Rate</h3>
+                <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
-              <p className="text-4xl font-bold text-purple-600 mb-2">98%</p>
-              <p className="text-sm text-gray-600">Order completion</p>
+              <p className="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">98%</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Order completion</p>
             </div>
           </div>
 
           {/* Performance Chart Placeholder */}
-          <div className="mt-8 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-8 border border-gray-200">
-            <h3 className="font-semibold text-gray-900 mb-4">Platform Performance</h3>
+          <div className="mt-8 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-8 border border-gray-200 dark:border-gray-600">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Platform Performance</h3>
             <div className="h-64 flex items-center justify-center">
               <div className="text-center">
                 <TrendingUp className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">Performance charts coming soon</p>
+                <p className="text-gray-500 dark:text-gray-400">Performance charts coming soon</p>
               </div>
             </div>
           </div>

@@ -218,7 +218,7 @@ const DriverOrders = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
         <div className="flex justify-center items-center h-96">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
@@ -228,12 +228,12 @@ const DriverOrders = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-x-hidden">
       <Navbar />
 
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">My Deliveries</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Deliveries</h1>
 
           {/* Filter */}
           <select
@@ -251,24 +251,24 @@ const DriverOrders = () => {
 
         {/* Orders List */}
         {filteredOrders.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-            <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 text-lg">No orders found</p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-12 text-center">
+            <Package className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+            <p className="text-gray-500 dark:text-gray-400 text-lg">No orders found</p>
           </div>
         ) : (
           <div className="space-y-4">
             {filteredOrders.map((order) => (
               <div
                 key={order._id}
-                className="bg-white rounded-lg shadow-sm p-6 overflow-hidden"
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 overflow-hidden"
               >
                 {/* Header */}
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                       Order #{order.orderNumber}
                     </h3>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       {new Date(order.createdAt).toLocaleString()}
                     </p>
                   </div>
@@ -280,25 +280,25 @@ const DriverOrders = () => {
                 {/* Restaurant & Customer Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {/* Pickup Location */}
-                  <div className="p-4 bg-blue-50 rounded-lg">
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
-                        <Package className="w-5 h-5 text-blue-600" />
-                        <p className="font-semibold text-gray-900">Pickup</p>
+                        <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <p className="font-semibold text-gray-900 dark:text-white">Pickup</p>
                       </div>
                       {order.status !== 'delivered' && (
                         <button
                           onClick={() => handleNavigate(order.restaurantId?.address)}
-                          className="text-blue-600 hover:text-blue-700"
+                          className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                         >
                           <Navigation className="w-4 h-4" />
                         </button>
                       )}
                     </div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-gray-900 dark:text-white">
                       {order.restaurantId?.name || 'Restaurant'}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       {order.restaurantId?.address?.street}
                       {order.restaurantId?.address?.area && `, ${order.restaurantId.address.area}`}
                       {order.restaurantId?.address?.city && `, ${order.restaurantId.address.city}`}
@@ -306,7 +306,7 @@ const DriverOrders = () => {
                     {order.restaurantId?.contactNumber && (
                       <a
                         href={`tel:${order.restaurantId.contactNumber}`}
-                        className="text-sm text-blue-600 hover:text-blue-700 flex items-center space-x-1 mt-2"
+                        className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center space-x-1 mt-2"
                       >
                         <Phone className="w-3 h-3" />
                         <span>{order.restaurantId.contactNumber}</span>
@@ -315,31 +315,31 @@ const DriverOrders = () => {
                   </div>
 
                   {/* Delivery Location */}
-                  <div className="p-4 bg-green-50 rounded-lg">
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
-                        <MapPin className="w-5 h-5 text-green-600" />
-                        <p className="font-semibold text-gray-900">Deliver To</p>
+                        <MapPin className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        <p className="font-semibold text-gray-900 dark:text-white">Deliver To</p>
                       </div>
                       {order.status !== 'delivered' && (
                         <button
                           onClick={() => handleNavigate(order.deliveryAddress)}
-                          className="text-green-600 hover:text-green-700"
+                          className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
                         >
                           <Navigation className="w-4 h-4" />
                         </button>
                       )}
                     </div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-gray-900 dark:text-white">
                       {order.customerId?.name || 'Customer'}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       {order.deliveryAddress?.street}, {order.deliveryAddress?.city}
                     </p>
                     {order.customerId?.phone && (
                       <a
                         href={`tel:${order.customerId.phone}`}
-                        className="text-sm text-green-600 hover:text-green-700 flex items-center space-x-1 mt-2"
+                        className="text-sm text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 flex items-center space-x-1 mt-2"
                       >
                         <Phone className="w-3 h-3" />
                         <span>{order.customerId.phone}</span>
@@ -349,13 +349,13 @@ const DriverOrders = () => {
                 </div>
 
                 {/* Order Details */}
-                <div className="border-t pt-4 mb-4">
+                <div className="border-t dark:border-gray-700 pt-4 mb-4">
                   <div className="grid grid-cols-2 gap-4 mb-3">
                     <div>
-                      <p className="text-sm text-gray-600 mb-2">Order Items</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Order Items</p>
                       <div className="space-y-1">
                         {order.items?.map((item, index) => (
-                          <p key={index} className="text-sm text-gray-900">
+                          <p key={index} className="text-sm text-gray-900 dark:text-white">
                             {item.quantity}x {item.menuItemId?.name || item.name}
                           </p>
                         ))}
@@ -363,10 +363,10 @@ const DriverOrders = () => {
                     </div>
                     {order.distance > 0 && (
                       <div>
-                        <p className="text-sm text-gray-600 mb-2">Distance</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Distance</p>
                         <div className="flex items-center space-x-2">
-                          <MapPin className="w-4 h-4 text-purple-600" />
-                          <p className="text-lg font-bold text-purple-600">
+                          <MapPin className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                          <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
                             {order.distance.toFixed(1)} km
                           </p>
                         </div>
@@ -376,10 +376,10 @@ const DriverOrders = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-between pt-4 border-t">
+                <div className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
                   <div>
-                    <p className="text-sm text-gray-600">Order Value</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Order Value</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       ₹{order.pricing?.total?.toFixed(2)}
                     </p>
                   </div>
@@ -400,8 +400,8 @@ const DriverOrders = () => {
 
                 {/* Earnings */}
                 {order.status === 'delivered' && (
-                  <div className="mt-4 p-3 bg-green-50 rounded-lg">
-                    <p className="text-sm text-green-800">
+                  <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <p className="text-sm text-green-800 dark:text-green-400">
                       Delivery Fee Earned: ₹{order.pricing?.deliveryFee?.toFixed(2)}
                     </p>
                   </div>
