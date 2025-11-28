@@ -1,20 +1,62 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, ArrowLeft, RotateCcw } from 'lucide-react';
-import { orderAPI } from '../../services/api';
+import { Package, ArrowLeft, RotateCcw, Star, CheckCircle } from 'lucide-react';
+import { orderAPI, reviewAPI } from '../../services/api';
 import Navbar from '../../components/Navbar';
 import useCartStore from '../../store/useCartStore';
 import { showToast } from '../../utils/toast';
+import ReviewModal from '../../components/ReviewModal';
 
 const OrdersPage = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reviewedOrders, setReviewedOrders] = useState({});
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const { clearCart, addItem } = useCartStore();
 
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  // Check which orders have reviews
+  useEffect(() => {
+    const checkReviews = async () => {
+      const deliveredOrders = orders.filter(o => o.status === 'delivered');
+      const reviewed = {};
+
+      for (const order of deliveredOrders) {
+        try {
+          await reviewAPI.getReviewByOrder(order._id);
+          reviewed[order._id] = true;
+        } catch {
+          reviewed[order._id] = false;
+        }
+      }
+      setReviewedOrders(reviewed);
+    };
+
+    if (orders.length > 0) {
+      checkReviews();
+    }
+  }, [orders]);
+
+  const handleRateOrder = (e, order) => {
+    e.stopPropagation();
+    setSelectedOrder(order);
+    setShowReviewModal(true);
+  };
+
+  const handleReviewSubmitted = () => {
+    setShowReviewModal(false);
+    setSelectedOrder(null);
+    // Mark this order as reviewed
+    if (selectedOrder) {
+      setReviewedOrders(prev => ({ ...prev, [selectedOrder._id]: true }));
+    }
+    showToast.success('Thanks for your review!');
+  };
 
   const handleReorder = (e, order) => {
     e.stopPropagation(); // Prevent navigation to order details
@@ -148,8 +190,40 @@ const OrdersPage = () => {
                       </p>
                     </div>
 
-                    {/* Reorder Button - Show for delivered or cancelled orders */}
-                    {(order.status === 'delivered' || order.status === 'cancelled') && (
+                    {/* Action Buttons */}
+                    {order.status === 'delivered' && (
+                      <div className="mt-3 flex gap-2">
+                        {/* Rate Button */}
+                        {reviewedOrders[order._id] ? (
+                          <button
+                            disabled
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg font-medium cursor-default"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                            Reviewed
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => handleRateOrder(e, order)}
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
+                          >
+                            <Star className="w-4 h-4" />
+                            Rate Order
+                          </button>
+                        )}
+                        {/* Reorder Button */}
+                        <button
+                          onClick={(e) => handleReorder(e, order)}
+                          className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                          Reorder
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Only Reorder for cancelled */}
+                    {order.status === 'cancelled' && (
                       <button
                         onClick={(e) => handleReorder(e, order)}
                         className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
@@ -165,6 +239,17 @@ const OrdersPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Review Modal */}
+      <ReviewModal
+        isOpen={showReviewModal}
+        onClose={() => {
+          setShowReviewModal(false);
+          setSelectedOrder(null);
+        }}
+        order={selectedOrder}
+        onReviewSubmitted={handleReviewSubmitted}
+      />
     </div>
   );
 };
