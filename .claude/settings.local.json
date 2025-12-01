@@ -31,7 +31,11 @@
       "Bash(npx cypress cache clear:*)",
       "Bash(npm run cypress:open:*)",
       "Bash(dir /b /s __tests__ tests 2)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []
