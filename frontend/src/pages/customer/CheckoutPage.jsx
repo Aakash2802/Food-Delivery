@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, CreditCard, Wallet, Loader, Clock, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { orderAPI, paymentAPI } from '../../services/api';
+import { orderAPI, paymentAPI, restaurantAPI, addressAPI } from '../../services/api';
 import useCartStore from '../../store/useCartStore';
 import useAuthStore from '../../store/useAuthStore';
 import Navbar from '../../components/Navbar';
 import PromoCodeSelector from '../../components/PromoCodeSelector';
+import { calculatePricing } from '../../utils/pricing';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -18,6 +19,24 @@ const CheckoutPage = () => {
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
   const [appliedPromo, setAppliedPromo] = useState(null);
+  // Unpaid online order from a previous attempt - reused on retry so closing
+  // the payment window doesn't leave a new unpaid order behind each time
+  const [pendingOnlineOrderId, setPendingOnlineOrderId] = useState(null);
+  const [minimumOrder, setMinimumOrder] = useState(restaurant?.minimumOrder || 0);
+  const [restaurantDeliveryFee, setRestaurantDeliveryFee] = useState(restaurant?.deliveryFee || 0);
+
+  // Fetch the restaurant's current minimum order and delivery fee
+  // (carts saved earlier may not have them)
+  useEffect(() => {
+    if (!restaurant?._id) return;
+    restaurantAPI.getById(restaurant._id)
+      .then((res) => {
+        const data = res.data?.restaurant || res.data || res;
+        setMinimumOrder(data?.minimumOrder || 0);
+        setRestaurantDeliveryFee(data?.deliveryFee || 0);
+      })
+      .catch(() => {});
+  }, [restaurant?._id]);
 
   // Check for corrupted cart data on mount
   useEffect(() => {
@@ -40,15 +59,64 @@ const CheckoutPage = () => {
     country: 'India',
     location: {
       type: 'Point',
-      coordinates: [77.2090, 28.6139] // [longitude, latitude]
+      coordinates: [78.1198, 9.9252] // [longitude, latitude] - Madurai, same default as the rest of the app
     }
   });
 
+  // Saved addresses live in /api/addresses (addressLine1/pincode); map them to the
+  // shape the order API expects (street/zipCode via postalCode)
+  const toCheckoutAddress = (a) => ({
+    _id: a._id,
+    id: a._id,
+    label: a.label,
+    isDefault: a.isDefault,
+    street: [a.addressLine1, a.addressLine2].filter(Boolean).join(', '),
+    city: a.city,
+    state: a.state,
+    postalCode: a.pincode,
+    location: a.location
+  });
+
+  const saveNewAddress = async () => {
+    const [longitude, latitude] = newAddress.location.coordinates;
+    try {
+      const res = await addressAPI.create({
+        label: 'Home',
+        fullName: user?.name,
+        phone: user?.phone,
+        addressLine1: newAddress.street,
+        city: newAddress.city,
+        state: newAddress.state,
+        pincode: newAddress.postalCode,
+        latitude,
+        longitude,
+        isDefault: addresses.length === 0
+      });
+      const saved = toCheckoutAddress(res.data?.address || res.data);
+      setAddresses((prev) => [...prev, saved]);
+      setSelectedAddress(saved);
+      setShowAddressForm(false);
+      toast.success('Address saved');
+      return saved;
+    } catch (error) {
+      // Still let the order go through with the typed address
+      const local = { ...newAddress, id: Date.now().toString() };
+      setAddresses((prev) => [...prev, local]);
+      setSelectedAddress(local);
+      setShowAddressForm(false);
+      toast.error(error?.message || 'Could not save address; using it for this order only');
+      return local;
+    }
+  };
+
   const subtotal = getTotal();
-  const deliveryFee = 40;
   const discount = appliedPromo?.discount || 0;
-  const gst = (subtotal - discount) * 0.05;
-  const total = subtotal + deliveryFee + gst - discount;
+  // Same formula the backend charges (see utils/pricing.js)
+  const { deliveryFee, taxes: gst, platformFee, total } =
+    calculatePricing(subtotal, restaurantDeliveryFee, discount);
+  // Minimum order applies to item subtotal (excludes delivery fee and GST)
+  const amountToMinimum = minimumOrder - subtotal;
+  const belowMinimum = amountToMinimum > 0;
 
   useEffect(() => {
     if (items.length === 0) {
@@ -56,22 +124,27 @@ const CheckoutPage = () => {
       return;
     }
 
-    // Load user addresses
-    if (user?.addresses && user.addresses.length > 0) {
-      setAddresses(user.addresses);
-      setSelectedAddress(user.addresses[0]);
-    } else {
-      setShowAddressForm(true);
-    }
-  }, [user, items, navigate]);
+  }, [items, navigate]);
 
-  const handleAddressSubmit = (e) => {
+  // Load saved addresses (fall back to the ones embedded on the user profile)
+  useEffect(() => {
+    if (!user) return;
+    addressAPI.getAll()
+      .then((res) => (res.data || []).map(toCheckoutAddress))
+      .catch(() => [])
+      .then((saved) => {
+        const list = saved.length
+          ? saved
+          : (user.addresses || []).map((a) => ({ ...a, id: a._id, postalCode: a.zipCode }));
+        setAddresses(list);
+        setSelectedAddress(list.find((a) => a.isDefault) || list[0] || null);
+        setShowAddressForm(list.length === 0);
+      });
+  }, [user?._id]);
+
+  const handleAddressSubmit = async (e) => {
     e.preventDefault();
-    const address = { ...newAddress, id: Date.now().toString() };
-    setAddresses([...addresses, address]);
-    setSelectedAddress(address);
-    setShowAddressForm(false);
-    toast.success('Address added successfully');
+    await saveNewAddress();
   };
 
   const loadRazorpay = () => {
@@ -89,12 +162,7 @@ const CheckoutPage = () => {
 
     // If address form is shown and filled, auto-save it first
     if (showAddressForm && newAddress.street && newAddress.city && newAddress.state && newAddress.postalCode) {
-      const address = { ...newAddress, id: Date.now().toString() };
-      setAddresses([...addresses, address]);
-      setSelectedAddress(address);
-      setShowAddressForm(false);
-      addressToUse = address;
-      toast.success('Address saved successfully');
+      addressToUse = await saveNewAddress();
     }
 
     if (!addressToUse && !(showAddressForm && newAddress.street)) {
@@ -156,17 +224,25 @@ const CheckoutPage = () => {
         orderData.scheduledFor = scheduledDateTime.toISOString();
       }
 
-      const orderResponse = await orderAPI.create(orderData);
-      console.log('📦 Full order response:', orderResponse);
-      console.log('📦 orderResponse.data:', orderResponse.data);
+      let order;
+      if (paymentMethod === 'razorpay' && pendingOnlineOrderId) {
+        order = { _id: pendingOnlineOrderId };
+      } else {
+        const orderResponse = await orderAPI.create(orderData);
+        order = orderResponse.data?.order || orderResponse.data;
 
-      const order = orderResponse.data?.order || orderResponse.data;
-      console.log('📦 Extracted order:', order);
-      console.log('📦 Order ID:', order?._id);
-
-      if (!order || !order._id) {
-        throw new Error('Order was created but order ID is missing from response');
+        if (!order || !order._id) {
+          throw new Error('Order was created but order ID is missing from response');
+        }
+        if (paymentMethod === 'razorpay') setPendingOnlineOrderId(order._id);
       }
+
+      const finishPaidOrder = () => {
+        toast.success('Payment successful!');
+        setPendingOnlineOrderId(null);
+        clearCart();
+        navigate(`/order/${order._id}`);
+      };
 
       if (paymentMethod === 'cod') {
         // Cash on Delivery - Order placed successfully
@@ -190,17 +266,28 @@ const CheckoutPage = () => {
 
       // Razorpay Integration
       if (paymentMethod === 'razorpay') {
+        const paymentData = await paymentAPI.createOrder({ orderId: order._id });
+        const razorpayOrder = paymentData.data.paymentOrder;
+
+        // Backend running with USE_MOCK_PAYMENT=true: no real gateway to open
+        if (razorpayOrder.isMock) {
+          const result = await paymentAPI.verify({
+            orderId: order._id,
+            razorpay_order_id: razorpayOrder.id,
+            razorpay_payment_id: `mock_pay_${Date.now()}`
+          });
+          if (result.success) finishPaidOrder();
+          return;
+        }
+
         const res = await loadRazorpay();
         if (!res) {
           toast.error('Razorpay SDK failed to load');
           return;
         }
 
-        const paymentData = await paymentAPI.createOrder({ orderId: order._id });
-        const razorpayOrder = paymentData.data.paymentOrder;
-
         const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_dummy',
+          key: razorpayOrder.key || import.meta.env.VITE_RAZORPAY_KEY_ID,
           amount: razorpayOrder.amount,
           currency: razorpayOrder.currency,
           name: 'Food Delivery',
@@ -216,11 +303,7 @@ const CheckoutPage = () => {
               };
 
               const result = await paymentAPI.verify(verifyData);
-              if (result.success) {
-                toast.success('Payment successful!');
-                clearCart();
-                navigate(`/order/${order._id}`);
-              }
+              if (result.success) finishPaidOrder();
             } catch (error) {
               toast.error('Payment verification failed');
               console.error(error);
@@ -233,10 +316,16 @@ const CheckoutPage = () => {
           },
           theme: {
             color: '#DC2626'
+          },
+          modal: {
+            ondismiss: () => toast('Payment cancelled. You can try again - your order is saved.')
           }
         };
 
         const paymentObject = new window.Razorpay(options);
+        paymentObject.on('payment.failed', (response) => {
+          toast.error(response.error?.description || 'Payment failed. Please try again.');
+        });
         paymentObject.open();
       }
 
@@ -244,8 +333,8 @@ const CheckoutPage = () => {
       console.error('Order creation error:', error);
       console.error('Error response:', error.response?.data);
 
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to place order';
-      const validationErrors = error.response?.data?.errors;
+      const errorMessage = error?.message || error.message || 'Failed to place order';
+      const validationErrors = error?.errors;
 
       if (validationErrors) {
         console.error('Validation errors:', validationErrors);
@@ -530,8 +619,13 @@ const CheckoutPage = () => {
                   )}
 
                   <div className="flex justify-between text-gray-700">
-                    <span>GST (5%)</span>
+                    <span>GST (9%)</span>
                     <span>₹{gst.toFixed(2)}</span>
+                  </div>
+
+                  <div className="flex justify-between text-gray-700">
+                    <span>Platform Fee</span>
+                    <span>₹{platformFee.toFixed(2)}</span>
                   </div>
 
                   <div className="border-t pt-3">
@@ -547,9 +641,16 @@ const CheckoutPage = () => {
                   </div>
                 </div>
 
+                {belowMinimum && (
+                  <p className="text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3 mb-3">
+                    Add ₹{amountToMinimum.toFixed(2)} more to place this order.
+                    Minimum order is ₹{minimumOrder} (item subtotal, excluding delivery fee and GST).
+                  </p>
+                )}
+
                 <button
                   onClick={handlePlaceOrder}
-                  disabled={loading}
+                  disabled={loading || belowMinimum}
                   className="btn btn-primary w-full flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (

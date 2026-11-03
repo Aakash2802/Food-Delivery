@@ -1,0 +1,21 @@
+# Keeps the free-tier deployment awake:
+#  - Render free web services spin down after ~15 min without traffic (first request then takes ~1 min)
+#  - MongoDB Atlas M0 clusters are paused after a long stretch with no connections
+# /health answers only after pinging MongoDB, so one request every 10 minutes keeps both alive.
+name: Keep backend awake
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /health
+        run: |
+          curl -fsS --max-time 60 --retry 2 "https://food-delivery-49hx.onrender.com/health" || {
+            echo "Backend did not answer (it may be cold-starting); will try again next run"
+            exit 0
+          }

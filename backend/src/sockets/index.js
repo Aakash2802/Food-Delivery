@@ -7,6 +7,8 @@ const socketIO = require('socket.io');
 const jwt = require('jsonwebtoken');
 const config = require('../config/env');
 const User = require('../models/User');
+const Restaurant = require('../models/Restaurant');
+const Order = require('../models/Order');
 
 let io;
 
@@ -88,9 +90,16 @@ const initializeSocket = (server) => {
 // Customer event handlers
 const handleCustomerEvents = (socket) => {
   // Track specific order
-  socket.on('order:track', (orderId) => {
-    socket.join(`order:${orderId}`);
-    console.log(`👀 Customer ${socket.user.name} tracking order: ${orderId}`);
+  socket.on('order:track', async (orderId) => {
+    try {
+      // Only the order's own customer may follow its live updates
+      const owns = await Order.exists({ _id: orderId, customerId: socket.user._id });
+      if (!owns) return;
+      socket.join(`order:${orderId}`);
+      console.log(`👀 Customer ${socket.user.name} tracking order: ${orderId}`);
+    } catch (error) {
+      console.error('Error tracking order:', error.message);
+    }
   });
 
   // Stop tracking order
@@ -101,10 +110,24 @@ const handleCustomerEvents = (socket) => {
 
 // Vendor event handlers
 const handleVendorEvents = (socket) => {
+  // Auto-join the vendor's own restaurant room so new-order/status events arrive
+  Restaurant.findOne({ ownerId: socket.user._id }).select('_id')
+    .then((restaurant) => {
+      if (restaurant) socket.join(`restaurant:${restaurant._id}`);
+    })
+    .catch((error) => console.error('Error joining vendor restaurant room:', error));
+
   // Join restaurant room
-  socket.on('restaurant:join', (restaurantId) => {
-    socket.join(`restaurant:${restaurantId}`);
-    console.log(`🏪 Vendor ${socket.user.name} joined restaurant: ${restaurantId}`);
+  socket.on('restaurant:join', async (restaurantId) => {
+    try {
+      // Vendors may only join their own restaurant's room
+      const owns = await Restaurant.exists({ _id: restaurantId, ownerId: socket.user._id });
+      if (!owns) return;
+      socket.join(`restaurant:${restaurantId}`);
+      console.log(`🏪 Vendor ${socket.user.name} joined restaurant: ${restaurantId}`);
+    } catch (error) {
+      console.error('Error joining restaurant room:', error.message);
+    }
   });
 
   // Leave restaurant room
@@ -113,7 +136,9 @@ const handleVendorEvents = (socket) => {
   });
 
   // Update restaurant status
-  socket.on('restaurant:status', ({ restaurantId, isOpen }) => {
+  socket.on('restaurant:status', async ({ restaurantId, isOpen }) => {
+    const owns = await Restaurant.exists({ _id: restaurantId, ownerId: socket.user._id }).catch(() => null);
+    if (!owns) return;
     io.to(`restaurant:${restaurantId}`).emit('restaurant:statusUpdated', { isOpen });
   });
 };
@@ -133,9 +158,15 @@ const handleDriverEvents = (socket) => {
         }
       });
 
-      // Broadcast to order room if orderId provided
-      if (orderId) {
+      // Broadcast only for an active order actually assigned to this driver
+      const activeOrder = orderId && await Order.exists({
+        _id: orderId,
+        driverId: socket.user._id,
+        status: { $in: ['assigned', 'picked', 'en_route'] }
+      });
+      if (activeOrder) {
         io.to(`order:${orderId}`).emit('driver:locationUpdated', {
+          orderId,
           driverId: socket.user._id,
           location: { latitude, longitude },
           timestamp: new Date()
@@ -179,22 +210,17 @@ const emitOrderStatusUpdate = (order) => {
     timestamp: new Date()
   };
 
-  // Emit to customer
-  io.to(`user:${order.customerId}`).emit('order:statusUpdated', update);
+  // Customer, vendor, driver, order trackers and admins - chained into one
+  // emit so a socket in several of these rooms gets the event only once
+  const rooms = [
+    `user:${order.customerId}`,
+    `restaurant:${order.restaurantId}`,
+    `order:${order._id}`,
+    'role:admin'
+  ];
+  if (order.driverId) rooms.push(`user:${order.driverId}`);
 
-  // Emit to restaurant/vendor
-  io.to(`restaurant:${order.restaurantId}`).emit('order:statusUpdated', update);
-
-  // Emit to driver if assigned
-  if (order.driverId) {
-    io.to(`user:${order.driverId}`).emit('order:statusUpdated', update);
-  }
-
-  // Emit to specific order room
-  io.to(`order:${order._id}`).emit('order:statusUpdated', update);
-
-  // Emit to admin
-  io.to('role:admin').emit('order:statusUpdated', update);
+  io.to(rooms).emit('order:statusUpdated', update);
 };
 
 // Emit new order notification
@@ -228,13 +254,13 @@ const emitDriverAssigned = (order, driver) => {
       id: driver._id,
       name: driver.name,
       phone: driver.phone,
-      vehicle: driver.vehicle
+      vehicle: driver.vehicleDetails
     },
     timestamp: new Date()
   };
 
-  // Notify customer
-  io.to(`user:${order.customerId}`).emit('driver:assigned', notification);
+  // Notify customer and order trackers (once)
+  io.to([`user:${order.customerId}`, `order:${order._id}`]).emit('driver:assigned', notification);
 
   // Notify driver
   io.to(`user:${driver._id}`).emit('order:assigned', {
@@ -243,8 +269,6 @@ const emitDriverAssigned = (order, driver) => {
     deliveryAddress: order.deliveryAddress
   });
 
-  // Notify order room
-  io.to(`order:${order._id}`).emit('driver:assigned', notification);
 };
 
 // Emit payment completed

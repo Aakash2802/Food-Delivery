@@ -33,7 +33,7 @@ const ProfilePage = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await orderAPI.getAll();
+      const response = await orderAPI.getAll({ limit: 50 });
       setOrders(response.data || []);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
@@ -47,7 +47,7 @@ const ProfilePage = () => {
 
     try {
       const response = await authAPI.updateProfile(formData);
-      updateUser(response.data);
+      updateUser(response.data?.user || response.data);
       toast.success('Profile updated successfully');
       setEditing(false);
     } catch (error) {

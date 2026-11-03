@@ -52,14 +52,18 @@ const schemas = {
   // Restaurant schemas
   createRestaurant: Joi.object({
     name: Joi.string().trim().min(2).max(200).required(),
-    description: Joi.string().max(1000),
+    description: Joi.string().max(1000).allow(""),
     ownerId: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required(),
     cuisines: Joi.array().items(Joi.string().trim()),
+    images: Joi.array().items(Joi.object({
+      url: Joi.string().uri().required(),
+      isPrimary: Joi.boolean()
+    })),
     location: Joi.object({
       street: Joi.string().required(),
       city: Joi.string().required(),
-      state: Joi.string(),
-      zipCode: Joi.string(),
+      state: Joi.string().allow(""),
+      zipCode: Joi.string().allow(""),
       coordinates: Joi.object({
         type: Joi.string().valid('Point').default('Point'),
         coordinates: Joi.array().items(Joi.number()).length(2).required()
@@ -81,8 +85,37 @@ const schemas = {
 
   updateRestaurant: Joi.object({
     name: Joi.string().trim().min(2).max(200),
-    description: Joi.string().max(1000),
+    description: Joi.string().max(1000).allow(''),
     cuisines: Joi.array().items(Joi.string().trim()),
+    images: Joi.array().items(Joi.object({
+      url: Joi.string().uri().required(),
+      isPrimary: Joi.boolean()
+    })),
+    location: Joi.object({
+      street: Joi.string().allow(''),
+      city: Joi.string(),
+      state: Joi.string().allow(''),
+      zipCode: Joi.string().allow(''),
+      country: Joi.string(),
+      coordinates: Joi.object({
+        type: Joi.string().valid('Point').default('Point'),
+        coordinates: Joi.array().items(Joi.number()).length(2).required()
+      })
+    }),
+    contactInfo: Joi.object({
+      phone: Joi.string().pattern(/^\+?[1-9]\d{9,14}$/),
+      email: Joi.string().email().allow('')
+    }),
+    openingHours: Joi.array().items(Joi.object({
+      day: Joi.string().valid('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday').required(),
+      open: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required(),
+      close: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).required()
+    })),
+    deliveryTime: Joi.object({
+      min: Joi.number().min(10).required(),
+      max: Joi.number().min(Joi.ref('min')).required()
+    }),
+    tags: Joi.array().items(Joi.string().trim()),
     isActive: Joi.boolean(),
     isOpen: Joi.boolean(),
     pricing: Joi.string().valid('$', '$$', '$$$', '$$$$'),
@@ -94,8 +127,9 @@ const schemas = {
   // Menu item schemas
   createMenuItem: Joi.object({
     name: Joi.string().trim().min(2).max(200).required(),
-    description: Joi.string().max(1000),
+    description: Joi.string().max(1000).allow(""),
     category: Joi.string().trim().required(),
+    images: Joi.array().items(Joi.string().uri()),
     price: Joi.number().min(0).required(),
     originalPrice: Joi.number().min(0),
     isVeg: Joi.boolean(),
@@ -140,7 +174,8 @@ const schemas = {
     }).required(),
     contactPhone: Joi.string().pattern(/^\+?[1-9]\d{9,14}$/).required(),
     paymentMethod: Joi.string().valid('cod', 'card', 'upi', 'wallet', 'razorpay', 'mock').required(),
-    promoCode: Joi.string().uppercase().trim()
+    promoCode: Joi.string().uppercase().trim(),
+    scheduledFor: Joi.date().greater('now')
   }),
 
   updateOrderStatus: Joi.object({

@@ -43,6 +43,17 @@ module.exports = {
     }
   },
 
+  // Optional image storage. Set CLOUDINARY_URL (cloudinary://key:secret@cloud) or the
+  // three separate vars; without them uploads are stored in MongoDB (max 1 MB each).
+  cloudinary: (() => {
+    const fromUrl = (process.env.CLOUDINARY_URL || '').match(/^cloudinary:\/\/([^:]+):([^@]+)@(.+)$/);
+    return {
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME || fromUrl?.[3],
+      apiKey: process.env.CLOUDINARY_API_KEY || fromUrl?.[1],
+      apiSecret: process.env.CLOUDINARY_API_SECRET || fromUrl?.[2]
+    };
+  })(),
+
   socket: {
     path: process.env.SOCKET_IO_PATH || '/socket.io',
     corsOrigin: process.env.SOCKET_IO_CORS_ORIGIN || 'http://localhost:5173'

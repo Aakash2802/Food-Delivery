@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Order = require('../models/Order');
 const { asyncHandler } = require('../middleware/error.middleware');
 const { paginate, buildPaginationResponse } = require('../utils/helpers');
+const { emitOrderStatusUpdate, emitDriverAssigned } = require('../sockets');
 
 /**
  * @desc    Update driver location
@@ -117,7 +118,7 @@ exports.getAssignedOrders = asyncHandler(async (req, res) => {
   let ordersQuery = Order.find(query)
     .sort({ createdAt: -1 })
     .populate('customerId', 'name phone')
-    .populate('restaurantId', 'name address contactNumber')
+    .populate('restaurantId', 'name location contactInfo')
     .populate('items.menuItemId', 'name');
 
   ordersQuery = paginate(ordersQuery, page, limit);
@@ -194,9 +195,9 @@ exports.getEarnings = asyncHandler(async (req, res) => {
             $multiply: ['$pricing.deliveryFee', 0.8] // Driver gets 80% of delivery fee
           }
         },
-        averageDeliveryTime: {
+        averageDeliveryTime: { // minutes
           $avg: {
-            $subtract: ['$actualDeliveryTime', '$createdAt']
+            $divide: [{ $subtract: ['$actualDeliveryTime', '$createdAt'] }, 60000]
           }
         }
       }
@@ -314,6 +315,7 @@ exports.acceptOrder = asyncHandler(async (req, res) => {
 
   // Check if driver already has an active order
   const activeOrder = await Order.findOne({
+    _id: { $ne: order._id }, // the order being accepted may itself already be assigned to us
     driverId: req.user._id,
     status: { $in: ['assigned', 'picked', 'en_route'] }
   });
@@ -330,23 +332,30 @@ exports.acceptOrder = asyncHandler(async (req, res) => {
   // 2. Order is 'assigned' (already assigned to this driver) - driver accepts and picks up
 
   if (order.status === 'ready') {
-    // Driver is claiming an available order
-    if (order.driverId) {
+    // Driver is claiming an available order - claim atomically so two
+    // drivers accepting at the same moment can't both get it
+    const claimed = await Order.findOneAndUpdate(
+      { _id: order._id, status: 'ready', driverId: null },
+      { $set: { driverId: req.user._id } },
+      { new: true }
+    );
+
+    if (!claimed) {
       return res.status(400).json({
         success: false,
         message: 'This order has already been claimed by another driver'
       });
     }
 
-    // Assign driver and update status to 'assigned'
-    order.driverId = req.user._id;
-    await order.updateStatus('assigned', req.user._id, 'Driver accepted order');
-    await order.save();
+    await claimed.updateStatus('assigned', req.user._id, 'Driver accepted order');
+
+    emitDriverAssigned(claimed, req.user);
+    emitOrderStatusUpdate(claimed);
 
     return res.status(200).json({
       success: true,
       message: 'Order accepted successfully',
-      data: { order }
+      data: { order: claimed }
     });
   }
 
@@ -367,6 +376,8 @@ exports.acceptOrder = asyncHandler(async (req, res) => {
 
   await order.updateStatus('picked', req.user._id, 'Driver accepted and picked up order');
   await order.save();
+
+  emitOrderStatusUpdate(order);
 
   res.status(200).json({
     success: true,
@@ -411,6 +422,8 @@ exports.rejectOrder = asyncHandler(async (req, res) => {
   order.driverId = null;
   await order.updateStatus('ready', req.user._id, `Driver rejected: ${reason}`);
   await order.save();
+
+  emitOrderStatusUpdate(order);
 
   res.status(200).json({
     success: true,

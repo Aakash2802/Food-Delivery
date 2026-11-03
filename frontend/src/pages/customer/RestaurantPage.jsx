@@ -63,6 +63,10 @@ const RestaurantPage = () => {
     : menuItems.filter(item => item.category === selectedCategory);
 
   const handleAddToCart = (item, e) => {
+    if (restaurant && !restaurant.isOpen) {
+      toast.error('This restaurant is currently closed');
+      return;
+    }
     const quantity = quantities[item._id] || 1;
 
     const cartItem = {
@@ -70,7 +74,7 @@ const RestaurantPage = () => {
       name: item.name,
       price: item.price,
       quantity: quantity,
-      image: item.images?.[0]?.url,
+      image: item.images?.[0],
       customizations: []
     };
 
@@ -82,12 +86,14 @@ const RestaurantPage = () => {
     // Trigger fly to cart animation
     if (e) {
       const rect = e.currentTarget.getBoundingClientRect();
-      triggerFlyToCart(rect.left + rect.width / 2, rect.top, item.images?.[0]?.url);
+      triggerFlyToCart(rect.left + rect.width / 2, rect.top, item.images?.[0]);
     }
 
     addItem(cartItem, {
       _id: restaurant._id,
-      name: restaurant.name
+      name: restaurant.name,
+      minimumOrder: restaurant.minimumOrder || 0,
+      deliveryFee: restaurant.deliveryFee || 0
     });
 
     toast.success(`${item.name} added to cart`);
@@ -201,6 +207,18 @@ const RestaurantPage = () => {
                   <span className="text-sm text-gray-500 dark:text-gray-400">contact</span>
                 </div>
               </div>
+
+              {/* Today's opening hours */}
+              {restaurant.openingHours?.length > 0 && (() => {
+                const today = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date().getDay()];
+                const hours = restaurant.openingHours.find((h) => h.day === today);
+                return (
+                  <p className="mb-4 text-sm text-gray-700 dark:text-gray-300 flex items-center">
+                    <Clock className="w-4 h-4 mr-2 text-red-500" />
+                    {hours ? `Open today ${hours.open} – ${hours.close}` : 'Closed today'}
+                  </p>
+                );
+              })()}
 
               {/* Additional Info */}
               {restaurant.minimumOrder && (

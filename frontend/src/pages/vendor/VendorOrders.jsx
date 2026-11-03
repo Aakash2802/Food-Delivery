@@ -13,6 +13,9 @@ const VendorOrders = () => {
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState(searchParams.get('status') || 'all');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   const statusOptions = [
@@ -25,12 +28,12 @@ const VendorOrders = () => {
     { value: 'picked', label: 'Picked Up' },
     { value: 'en_route', label: 'On the Way' },
     { value: 'delivered', label: 'Delivered' },
-    { value: 'cancelled', label: 'Cancelled' }
+    { value: 'cancelled', label: 'Cancelled' },
+    { value: 'rejected', label: 'Rejected' }
   ];
 
   useEffect(() => {
     fetchRestaurant();
-    fetchOrders();
     setupSocketListeners();
 
     return () => {
@@ -42,25 +45,38 @@ const VendorOrders = () => {
   const fetchRestaurant = async () => {
     try {
       const response = await restaurantAPI.getByVendor();
-      if (response.data) {
-        setRestaurant(response.data);
-        socketService.joinRestaurant(response.data._id);
+      if (response.data?.restaurant) {
+        setRestaurant(response.data.restaurant);
+        socketService.joinRestaurant(response.data.restaurant._id);
       }
     } catch (error) {
       console.error('Failed to fetch restaurant:', error);
     }
   };
 
-  const fetchOrders = async () => {
+  const PAGE_SIZE = 20;
+
+  // Status filter is applied server-side; changing it reloads from page 1
+  useEffect(() => {
+    fetchOrders(1);
+  }, [selectedStatus]);
+
+  const fetchOrders = async (nextPage = 1) => {
+    const append = nextPage > 1;
     try {
-      setLoading(true);
-      const response = await orderAPI.getAll();
-      setOrders(response.data || []);
+      append ? setLoadingMore(true) : setLoading(true);
+      const params = { page: nextPage, limit: PAGE_SIZE };
+      if (selectedStatus !== 'all') params.status = selectedStatus;
+      const response = await orderAPI.getAll(params);
+      const batch = response.data || [];
+      setOrders((prev) => (append ? [...prev, ...batch] : batch));
+      setPage(nextPage);
+      setHasMore(Boolean(response.pagination?.hasMore));
     } catch (error) {
       toast.error('Failed to load orders');
       console.error(error);
     } finally {
-      setLoading(false);
+      append ? setLoadingMore(false) : setLoading(false);
     }
   };
 
@@ -70,7 +86,8 @@ const VendorOrders = () => {
         duration: 5000,
         icon: '🔔'
       });
-      setOrders(prevOrders => [order, ...prevOrders]);
+      // The event only carries a summary - reload to get the full order
+      fetchOrders();
     });
 
     socketService.on('order:statusUpdated', (data) => {
@@ -101,7 +118,7 @@ const VendorOrders = () => {
 
   const handleRejectOrder = async (orderId) => {
     if (window.confirm('Are you sure you want to reject this order?')) {
-      await handleUpdateStatus(orderId, 'cancelled');
+      await handleUpdateStatus(orderId, 'rejected');
     }
   };
 
@@ -142,6 +159,7 @@ const VendorOrders = () => {
       case 'delivered':
         return 'bg-green-100 text-green-800';
       case 'cancelled':
+      case 'rejected':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -307,6 +325,13 @@ const VendorOrders = () => {
                 </div>
               </div>
             ))}
+            {hasMore && (
+              <div className="text-center pt-2">
+                <button onClick={() => fetchOrders(page + 1)} disabled={loadingMore} className="btn btn-secondary disabled:opacity-60">
+                  {loadingMore ? 'Loading…' : 'Load more orders'}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

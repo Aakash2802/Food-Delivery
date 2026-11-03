@@ -152,7 +152,7 @@ promoCodeSchema.methods.isValidFor = function(userId, orderValue, restaurantId) 
 
   // Check restaurant applicability
   if (this.applicableFor === 'specific_restaurants') {
-    if (!this.restaurants.some(r => r.toString() === restaurantId.toString())) {
+    if (!restaurantId || !this.restaurants.some(r => r.toString() === restaurantId.toString())) {
       return { valid: false, message: 'Promo code not applicable for this restaurant' };
     }
   }

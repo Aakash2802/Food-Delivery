@@ -98,6 +98,24 @@ const Navbar = () => {
                       >
                         Profile
                       </Link>
+                      {user?.role === 'customer' && (
+                        <>
+                          <Link
+                            to="/orders"
+                            className="block px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
+                            onClick={() => setShowMenu(false)}
+                          >
+                            My Orders
+                          </Link>
+                          <Link
+                            to="/addresses"
+                            className="block px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
+                            onClick={() => setShowMenu(false)}
+                          >
+                            Addresses
+                          </Link>
+                        </>
+                      )}
                       <button
                         onClick={handleLogout}
                         className="w-full text-left px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 flex items-center space-x-2 transition-all duration-200"

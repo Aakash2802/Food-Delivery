@@ -89,10 +89,19 @@ reviewSchema.post('save', async function() {
   const Restaurant = mongoose.model('Restaurant');
 
   try {
-    const restaurant = await Restaurant.findById(this.restaurantId);
-    if (restaurant) {
-      await restaurant.updateRating(this.ratings.overall);
-    }
+    // Recompute from all reviews so vendor replies / customer edits
+    // don't count the same review twice
+    const [stats] = await this.constructor.aggregate([
+      { $match: { restaurantId: this.restaurantId, isPublished: true, isFlagged: false } },
+      { $group: { _id: null, average: { $avg: '$ratings.overall' }, count: { $sum: 1 } } }
+    ]);
+    await Restaurant.updateOne(
+      { _id: this.restaurantId },
+      {
+        'rating.average': stats ? Math.round(stats.average * 10) / 10 : 0,
+        'rating.count': stats ? stats.count : 0
+      }
+    );
   } catch (error) {
     console.error('Error updating restaurant rating:', error);
   }

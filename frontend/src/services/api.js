@@ -22,14 +22,47 @@ api.interceptors.request.use(
 );
 
 // Response interceptor for error handling
+// Access tokens expire after ~1h; swap them for a new one using the refresh
+// token instead of logging the user out mid-session. One refresh at a time.
+let refreshPromise = null;
+
+const refreshAccessToken = async () => {
+  const refreshToken = localStorage.getItem('refreshToken');
+  if (!refreshToken) throw new Error('No refresh token');
+  const res = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+  const { tokens } = res.data.data;
+  localStorage.setItem('token', tokens.accessToken);
+  localStorage.setItem('refreshToken', tokens.refreshToken);
+  return tokens.accessToken;
+};
+
+const isAuthRoute = (url = '') =>
+  ['/auth/login', '/auth/signup', '/auth/refresh'].some((p) => url.includes(p));
+
 api.interceptors.response.use(
   (response) => response.data,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Only redirect to login if not already on login/signup pages
+  async (error) => {
+    const original = error.config;
+    const status = error.response?.status;
+
+    if (status === 401 && original && !original._retry && !isAuthRoute(original.url)
+        && localStorage.getItem('refreshToken')) {
+      original._retry = true;
+      try {
+        refreshPromise = refreshPromise || refreshAccessToken().finally(() => { refreshPromise = null; });
+        const token = await refreshPromise;
+        original.headers.Authorization = `Bearer ${token}`;
+        return api(original);
+      } catch {
+        // refresh failed - fall through and log out
+      }
+    }
+
+    if (status === 401 && !isAuthRoute(original?.url)) {
       const currentPath = window.location.pathname;
       if (currentPath !== '/login' && currentPath !== '/signup') {
         localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
         window.location.href = '/login';
       }
@@ -82,7 +115,7 @@ export const orderAPI = {
   getById: (id) => api.get(`/orders/${id}`),
   updateStatus: (id, data) => api.patch(`/orders/vendor/${id}/status`, data),
   cancel: (id, data) => api.post(`/orders/${id}/cancel`, data),
-  getStats: (params) => api.get('/orders/stats', { params }),
+  getStats: (params) => api.get('/orders/stats/summary', { params }),
 };
 
 // Payment API
@@ -97,7 +130,7 @@ export const paymentAPI = {
 export const driverAPI = {
   updateLocation: (data) => api.patch('/driver/location', data),
   toggleAvailability: (data) => api.patch('/driver/availability', data),
-  getOrders: () => api.get('/driver/orders'),
+  getOrders: (params) => api.get('/driver/orders', { params }),
   acceptOrder: (id) => api.post(`/driver/orders/${id}/accept`),
   rejectOrder: (id, data) => api.post(`/driver/orders/${id}/reject`, data),
   updateOrderStatus: (id, data) => api.patch(`/orders/driver/${id}/status`, data),
@@ -110,18 +143,19 @@ export const adminAPI = {
   getDashboard: () => api.get('/admin/dashboard/stats'),
   getUsers: (params) => api.get('/admin/users', { params }),
   updateUserStatus: (userId, data) => api.patch(`/admin/users/${userId}/status`, data),
-  getDrivers: () => api.get('/admin/drivers'),
-  getLiveOrders: () => api.get('/admin/orders/live'),
+  getDrivers: (params) => api.get('/admin/drivers', { params }),
+  assignDriver: (orderId, driverId) => api.post(`/orders/admin/${orderId}/assign`, { driverId }),
+  getLiveOrders: (params) => api.get('/admin/orders/live', { params }),
   getRevenue: (params) => api.get('/admin/reports/revenue', { params }),
-  getAnalytics: () => api.get('/admin/analytics'),
+  getAnalytics: (params) => api.get('/admin/analytics', { params }),
   getPromos: () => api.get('/promos/admin/all'),
   createPromo: (data) => api.post('/promos/admin/create', data),
   updatePromo: (id, data) => api.put(`/promos/admin/${id}`, data),
   deletePromo: (id) => api.delete(`/promos/admin/${id}`),
   togglePromo: (id) => api.patch(`/promos/admin/${id}/toggle`),
-  getAllRestaurants: () => api.get('/admin/restaurants'),
+  getAllRestaurants: (params) => api.get('/admin/restaurants', { params }),
   approveRestaurant: (restaurantId) => api.patch(`/admin/restaurants/${restaurantId}/approve`),
-  rejectRestaurant: (restaurantId) => api.patch(`/admin/restaurants/${restaurantId}/reject`),
+  rejectRestaurant: (restaurantId, data) => api.patch(`/admin/restaurants/${restaurantId}/reject`, data),
 };
 
 // Review API
@@ -158,6 +192,15 @@ export const addressAPI = {
   update: (id, data) => api.put(`/addresses/${id}`, data),
   delete: (id) => api.delete(`/addresses/${id}`),
   setDefault: (id) => api.patch(`/addresses/${id}/default`),
+};
+
+// Upload API (images for restaurants / menu items)
+export const uploadAPI = {
+  image: (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    return api.post('/uploads', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
 };
 
 export default api;

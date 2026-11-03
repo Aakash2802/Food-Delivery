@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, User, Clock, X, Star } from 'lucide-react';
-import axios from 'axios';
+import api from '../../services/api';
 import toast from 'react-hot-toast';
 import Navbar from '../../components/Navbar';
 
@@ -21,8 +21,8 @@ const TicketDetailPage = () => {
 
   const fetchTicket = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/support/tickets/${id}`);
-      setTicket(response.data.data);
+      const response = await api.get(`/support/tickets/${id}`);
+      setTicket(response.data);
     } catch (error) {
       toast.error('Failed to load ticket');
       console.error(error);
@@ -41,13 +41,12 @@ const TicketDetailPage = () => {
 
     try {
       setSending(true);
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/support/tickets/${id}/messages`,
+      const response = await api.post(`/support/tickets/${id}/messages`,
         { message: message.trim() }
       );
 
-      if (response.data.success) {
-        setTicket(response.data.data);
+      if (response.success) {
+        setTicket(response.data);
         setMessage('');
         toast.success('Message sent');
       }
@@ -62,13 +61,12 @@ const TicketDetailPage = () => {
     if (!confirm('Are you sure you want to close this ticket?')) return;
 
     try {
-      const response = await axios.patch(
-        `${import.meta.env.VITE_API_URL}/api/support/tickets/${id}/close`
+      const response = await api.patch(`/support/tickets/${id}/close`
       );
 
-      if (response.data.success) {
+      if (response.success) {
         toast.success('Ticket closed');
-        setTicket(response.data.data);
+        setTicket(response.data);
         setShowRating(true);
       }
     } catch (error) {
@@ -83,12 +81,11 @@ const TicketDetailPage = () => {
     }
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/support/tickets/${id}/rate`,
+      const response = await api.post(`/support/tickets/${id}/rate`,
         { rating }
       );
 
-      if (response.data.success) {
+      if (response.success) {
         toast.success('Thank you for your feedback!');
         setShowRating(false);
         fetchTicket();

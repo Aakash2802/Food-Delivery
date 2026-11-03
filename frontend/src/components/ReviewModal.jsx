@@ -73,7 +73,7 @@ const ReviewModal = ({ isOpen, onClose, order, onReviewSubmitted }) => {
       onReviewSubmitted?.();
       onClose();
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message || 'Failed to submit review');
+      toast.error(error?.message || error.message || 'Failed to submit review');
     } finally {
       setIsSubmitting(false);
     }

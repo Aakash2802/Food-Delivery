@@ -10,6 +10,9 @@ import ReviewModal from '../../components/ReviewModal';
 const OrdersPage = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reviewedOrders, setReviewedOrders] = useState({});
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -87,15 +90,21 @@ const OrdersPage = () => {
     navigate('/cart');
   };
 
-  const fetchOrders = async () => {
+  const PAGE_SIZE = 20;
+
+  const fetchOrders = async (nextPage = 1) => {
+    const append = nextPage > 1;
     try {
-      setLoading(true);
-      const response = await orderAPI.getAll();
-      setOrders(response.data || []);
+      append ? setLoadingMore(true) : setLoading(true);
+      const response = await orderAPI.getAll({ page: nextPage, limit: PAGE_SIZE });
+      const batch = response.data || [];
+      setOrders((prev) => (append ? [...prev, ...batch] : batch));
+      setPage(nextPage);
+      setHasMore(Boolean(response.pagination?.hasMore));
     } catch (error) {
       console.error('Failed to fetch orders:', error);
     } finally {
-      setLoading(false);
+      append ? setLoadingMore(false) : setLoading(false);
     }
   };
 
@@ -234,6 +243,13 @@ const OrdersPage = () => {
                     )}
                   </div>
                 ))}
+                {hasMore && (
+                  <div className="text-center pt-2">
+                    <button onClick={() => fetchOrders(page + 1)} disabled={loadingMore} className="btn btn-secondary disabled:opacity-60">
+                      {loadingMore ? 'Loading…' : 'Load more orders'}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

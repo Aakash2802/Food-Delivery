@@ -16,7 +16,7 @@ const DriverDashboard = () => {
     pendingDeliveries: 0,
     totalDistance: 0
   });
-  const [isAvailable, setIsAvailable] = useState(true);
+  const [isAvailable, setIsAvailable] = useState(false);
   const [availableOrders, setAvailableOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,7 +24,6 @@ const DriverDashboard = () => {
     fetchStats();
     fetchAvailableOrders();
     setupSocketListeners();
-    startLocationUpdates();
 
     return () => {
       socketService.off('order:assigned');
@@ -41,6 +40,9 @@ const DriverDashboard = () => {
         pendingDeliveries: response.data?.activeOrders || 0,
         totalDistance: response.data?.today?.todayDistance || 0
       });
+      if (typeof response.data?.isAvailable === 'boolean') {
+        setIsAvailable(response.data.isAvailable);
+      }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     } finally {
@@ -70,34 +72,6 @@ const DriverDashboard = () => {
     });
   };
 
-  const startLocationUpdates = () => {
-    if ('geolocation' in navigator) {
-      const watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          // Update location via socket for active orders
-          availableOrders.forEach(order => {
-            if (['picked_up', 'out_for_delivery'].includes(order.status)) {
-              socketService.updateDriverLocation(latitude, longitude, order._id);
-            }
-          });
-        },
-        (error) => {
-          console.error('Location error:', error);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
-        }
-      );
-
-      return () => {
-        navigator.geolocation.clearWatch(watchId);
-      };
-    }
-  };
-
   const handleToggleAvailability = async () => {
     try {
       await driverAPI.toggleAvailability({ isAvailable: !isAvailable });
@@ -110,10 +84,11 @@ const DriverDashboard = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'ready_for_pickup':
+      case 'ready':
         return 'bg-yellow-100 text-yellow-800';
-      case 'picked_up':
-      case 'out_for_delivery':
+      case 'assigned':
+      case 'picked':
+      case 'en_route':
         return 'bg-blue-100 text-blue-800';
       case 'delivered':
         return 'bg-green-100 text-green-800';
@@ -356,7 +331,7 @@ const DriverDashboard = () => {
                         Pickup
                       </p>
                       <p className="font-semibold text-gray-900 dark:text-white">
-                        {order.restaurantId?.address?.city || 'Restaurant'}
+                        {order.restaurantId?.location?.city || 'Restaurant'}
                       </p>
                     </div>
                     <div>

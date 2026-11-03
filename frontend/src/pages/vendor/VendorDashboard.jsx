@@ -51,7 +51,7 @@ const VendorDashboard = () => {
       setLoading(true);
 
       // Fetch all orders
-      const ordersResponse = await orderAPI.getAll();
+      const ordersResponse = await orderAPI.getAll({ limit: 50 });
       const orders = ordersResponse.data || [];
 
       // Calculate stats
@@ -64,13 +64,15 @@ const VendorDashboard = () => {
         order => ['pending', 'confirmed', 'preparing'].includes(order.status)
       );
 
-      const todayRevenue = todayOrders.reduce(
+      const todayRevenue = todayOrders
+        .filter(order => !['cancelled', 'rejected'].includes(order.status))
+        .reduce(
         (sum, order) => sum + (order.pricing?.total || 0),
         0
       );
 
       setStats({
-        totalOrders: orders.length,
+        totalOrders: ordersResponse.pagination?.total ?? orders.length,
         pendingOrders: pendingOrders.length,
         todayRevenue: todayRevenue,
         avgRating: restaurant?.rating?.average || 0
@@ -217,6 +219,19 @@ const VendorDashboard = () => {
       <Navbar />
 
       <div className="container mx-auto px-4 py-8 max-w-full">
+        {/* Approval status */}
+        {!restaurant.isApproved && (
+          <div className={`mb-6 rounded-xl p-4 border ${
+            restaurant.status === 'rejected'
+              ? 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300'
+              : 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300'
+          }`}>
+            {restaurant.status === 'rejected'
+              ? `Your restaurant was not approved${restaurant.rejectionReason ? `: ${restaurant.rejectionReason}` : ''}. Please contact support.`
+              : 'Your restaurant is awaiting admin approval. You can set up your menu now; customers can order once it is approved.'}
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8 animate-fade-in">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -233,7 +248,9 @@ const VendorDashboard = () => {
             <div className="flex items-center space-x-4 mt-4 md:mt-0">
               <button
                 onClick={handleToggleStatus}
-                className={`px-6 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg ${
+                disabled={!restaurant.isApproved}
+                title={restaurant.isApproved ? '' : 'Available after admin approval'}
+                className={`px-6 py-3 rounded-xl font-bold transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${
                   restaurant.isOpen
                     ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
                     : 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700'
@@ -248,6 +265,14 @@ const VendorDashboard = () => {
               >
                 <Settings className="w-4 h-4" />
                 <span>Manage Menu</span>
+              </button>
+
+              <button
+                onClick={() => navigate('/vendor/settings')}
+                className="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center space-x-2 shadow-md"
+              >
+                <Store className="w-4 h-4" />
+                <span>Restaurant Settings</span>
               </button>
             </div>
           </div>

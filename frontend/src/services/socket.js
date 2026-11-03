@@ -5,12 +5,17 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
 class SocketService {
   constructor() {
     this.socket = null;
+    // event -> callbacks; kept even while disconnected so listeners registered
+    // before the socket connects (e.g. right after a page reload) still attach
     this.listeners = new Map();
     this.pendingEmits = [];
   }
 
   connect(token) {
-    if (this.socket?.connected) return;
+    if (this.socket) {
+      if (this.socket.connected || this.socket.active) return this.socket;
+      this.socket.disconnect();
+    }
 
     this.socket = io(SOCKET_URL, {
       auth: { token },
@@ -18,6 +23,11 @@ class SocketService {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,
+    });
+
+    // Attach listeners registered before connect
+    this.listeners.forEach((callbacks, event) => {
+      callbacks.forEach((callback) => this.socket.on(event, callback));
     });
 
     this.socket.on('connect', () => {
@@ -35,7 +45,7 @@ class SocketService {
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
+      console.error('Socket connection error:', error.message);
     });
 
     return this.socket;
@@ -45,33 +55,34 @@ class SocketService {
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
-      this.listeners.clear();
     }
+    this.listeners.clear();
+    this.pendingEmits = [];
   }
 
   on(event, callback) {
-    if (!this.socket) return;
-
-    this.socket.on(event, callback);
-
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);
     }
     this.listeners.get(event).push(callback);
+
+    this.socket?.on(event, callback);
   }
 
+  // off(event) removes every listener for the event; off(event, cb) removes one
   off(event, callback) {
-    if (!this.socket) return;
-
-    this.socket.off(event, callback);
-
-    if (this.listeners.has(event)) {
-      const callbacks = this.listeners.get(event);
-      const index = callbacks.indexOf(callback);
-      if (index > -1) {
-        callbacks.splice(index, 1);
-      }
+    if (!callback) {
+      this.listeners.delete(event);
+      this.socket?.off(event);
+      return;
     }
+
+    const callbacks = this.listeners.get(event);
+    if (callbacks) {
+      const index = callbacks.indexOf(callback);
+      if (index > -1) callbacks.splice(index, 1);
+    }
+    this.socket?.off(event, callback);
   }
 
   emit(event, data) {

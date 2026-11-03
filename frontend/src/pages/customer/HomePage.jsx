@@ -99,7 +99,7 @@ const HomePage = () => {
       }
 
       if (filters.cuisines && filters.cuisines !== 'All') {
-        queryParams.cuisines = filters.cuisines;
+        queryParams.cuisine = filters.cuisines; // backend filter param is 'cuisine'
       }
 
       if (filters.minRating > 0) {

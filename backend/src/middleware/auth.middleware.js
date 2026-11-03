@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Restaurant = require('../models/Restaurant');
 const config = require('../config/env');
 
 const authMiddleware = async (req, res, next) => {
@@ -34,6 +35,16 @@ const authMiddleware = async (req, res, next) => {
         success: false,
         message: 'User account is inactive.'
       });
+    }
+
+    // Vendors created by older seed scripts only have Restaurant.ownerId set;
+    // link User.restaurantId so vendor routes that rely on it work
+    if (user.role === 'vendor' && !user.restaurantId) {
+      const restaurant = await Restaurant.findOne({ ownerId: user._id }).select('_id');
+      if (restaurant) {
+        user.restaurantId = restaurant._id;
+        await User.updateOne({ _id: user._id }, { restaurantId: restaurant._id });
+      }
     }
 
     // Attach user to request

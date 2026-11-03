@@ -219,7 +219,14 @@ const restaurantSchema = new mongoose.Schema({
     default: false
   },
   approvedAt: Date,
-  rejectionReason: String
+  rejectedAt: Date,
+  rejectionReason: String,
+  // Approval workflow state (isApproved stays the source of truth for "can take orders")
+  status: {
+    type: String,
+    enum: ['pending', 'active', 'rejected'],
+    default: 'pending'
+  }
 }, {
   timestamps: true
 });

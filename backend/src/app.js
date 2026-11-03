@@ -1,5 +1,6 @@
 require('./config/env'); // Load environment variables first
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
@@ -24,6 +25,7 @@ const loyaltyRoutes = require('./routes/loyaltyRoutes');
 const supportRoutes = require('./routes/supportRoutes');
 const promoRoutes = require('./routes/promo.routes');
 const addressRoutes = require('./routes/address.routes');
+const uploadRoutes = require('./routes/upload.routes');
 
 const app = express();
 
@@ -64,10 +66,23 @@ if (config.env === 'development') {
 // app.use('/api', apiLimiter);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Server is healthy',
+// Also pings MongoDB, so an uptime monitor hitting this keeps both the
+// Render instance and the Atlas free cluster active
+app.get('/health', async (req, res) => {
+  let database = 'disconnected';
+  try {
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.connection.db.admin().ping();
+      database = 'connected';
+    }
+  } catch (error) {
+    database = 'error';
+  }
+
+  res.status(database === 'connected' ? 200 : 503).json({
+    success: database === 'connected',
+    message: database === 'connected' ? 'Server is healthy' : 'Database unavailable',
+    database,
     timestamp: new Date().toISOString(),
     environment: config.env
   });
@@ -86,6 +101,7 @@ app.use('/api/loyalty', loyaltyRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/promos', promoRoutes);
 app.use('/api/addresses', addressRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 // Temporary welcome route
 app.get('/api', (req, res) => {

@@ -5,8 +5,9 @@ const errorMiddleware = (err, req, res, next) => {
   let error = { ...err };
   error.message = err.message;
 
-  // Log error for debugging
-  if (process.env.NODE_ENV === 'development') {
+  // Log error for debugging (skip expected 4xx responses such as 404s and validation errors)
+  const knownStatus = err.statusCode || (res.statusCode >= 400 ? res.statusCode : 0);
+  if (process.env.NODE_ENV === 'development' && !(knownStatus >= 400 && knownStatus < 500)) {
     console.error('Error:', err);
   }
 
@@ -70,7 +71,8 @@ const errorMiddleware = (err, req, res, next) => {
     }
   }
 
-  const statusCode = error.statusCode || err.statusCode || 500;
+  const statusCode = error.statusCode || err.statusCode ||
+    (res.statusCode >= 400 ? res.statusCode : 500);
   const message = error.message || 'Internal Server Error';
 
   res.status(statusCode).json({

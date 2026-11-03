@@ -186,23 +186,27 @@ const AdminDashboard = () => {
 
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-900 dark:text-white">Success Rate</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Drivers Online</h3>
                 <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
-              <p className="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">98%</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Order completion</p>
+              <p className="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">{stats.activeDrivers || 0}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Available right now</p>
             </div>
           </div>
 
-          {/* Performance Chart Placeholder */}
-          <div className="mt-8 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-8 border border-gray-200 dark:border-gray-600">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Platform Performance</h3>
-            <div className="h-64 flex items-center justify-center">
-              <div className="text-center">
-                <TrendingUp className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">Performance charts coming soon</p>
-              </div>
+          {/* Analytics */}
+          <div className="mt-8 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-8 border border-gray-200 dark:border-gray-600 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Platform Performance</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Revenue trend, top restaurants and drivers, order status mix</p>
             </div>
+            <button
+              onClick={() => navigate('/admin/analytics')}
+              className="btn btn-primary flex items-center space-x-2"
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span>Open analytics</span>
+            </button>
           </div>
         </div>
       </div>

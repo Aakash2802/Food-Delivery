@@ -9,6 +9,9 @@ import Navbar from '../../components/Navbar';
 const DriverOrders = () => {
   const location = useLocation();
   const [orders, setOrders] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState(location.state?.filter || 'active');
 
@@ -19,7 +22,6 @@ const DriverOrders = () => {
   ];
 
   useEffect(() => {
-    fetchOrders();
     setupSocketListeners();
 
     return () => {
@@ -28,18 +30,44 @@ const DriverOrders = () => {
     };
   }, []);
 
-  const fetchOrders = async () => {
+  const PAGE_SIZE = 20;
+
+  // Completed deliveries are filtered server-side; active ones are few and filtered locally
+  useEffect(() => {
+    fetchOrders(1);
+  }, [filter]);
+
+  const fetchOrders = async (nextPage = 1) => {
+    const append = nextPage > 1;
     try {
-      setLoading(true);
-      const response = await driverAPI.getOrders();
-      setOrders(response.data || []);
+      append ? setLoadingMore(true) : setLoading(true);
+      const params = { page: nextPage, limit: PAGE_SIZE };
+      if (filter === 'completed') params.status = 'delivered';
+      const response = await driverAPI.getOrders(params);
+      const batch = response.data || [];
+      setOrders((prev) => (append ? [...prev, ...batch] : batch));
+      setPage(nextPage);
+      setHasMore(Boolean(response.pagination?.hasMore));
     } catch (error) {
       toast.error('Failed to load orders');
       console.error(error);
     } finally {
-      setLoading(false);
+      append ? setLoadingMore(false) : setLoading(false);
     }
   };
+
+  // Stream the driver's GPS position while an order is out for delivery;
+  // one watcher, cleared when the order completes or the page unmounts
+  const activeOrderId = orders.find(o => ['picked', 'en_route'].includes(o.status))?._id;
+  useEffect(() => {
+    if (!activeOrderId || !('geolocation' in navigator)) return;
+    const watchId = navigator.geolocation.watchPosition(
+      ({ coords }) => socketService.updateDriverLocation(coords.latitude, coords.longitude, activeOrderId),
+      (error) => console.error('Location error:', error),
+      { enableHighAccuracy: true, maximumAge: 5000 }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [activeOrderId]);
 
   const setupSocketListeners = () => {
     socketService.on('order:assigned', (order) => {
@@ -78,17 +106,6 @@ const DriverOrders = () => {
       toast.success('Started delivery!');
       fetchOrders();
 
-      // Start location updates
-      if ('geolocation' in navigator) {
-        const watchId = navigator.geolocation.watchPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            socketService.updateDriverLocation(latitude, longitude, orderId);
-          },
-          (error) => console.error('Location error:', error),
-          { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-        );
-      }
     } catch (error) {
       toast.error('Failed to update status');
     }
@@ -117,6 +134,10 @@ const DriverOrders = () => {
       // GeoJSON format: [longitude, latitude]
       lng = address.location.coordinates[0];
       lat = address.location.coordinates[1];
+    } else if (address.coordinates?.coordinates) {
+      // Restaurant.location: coordinates = { type: 'Point', coordinates: [lng, lat] }
+      lng = address.coordinates.coordinates[0];
+      lat = address.coordinates.coordinates[1];
     } else if (address.latitude && address.longitude) {
       // Direct format
       lat = address.latitude;
@@ -288,7 +309,7 @@ const DriverOrders = () => {
                       </div>
                       {order.status !== 'delivered' && (
                         <button
-                          onClick={() => handleNavigate(order.restaurantId?.address)}
+                          onClick={() => handleNavigate(order.restaurantId?.location)}
                           className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                         >
                           <Navigation className="w-4 h-4" />
@@ -385,15 +406,6 @@ const DriverOrders = () => {
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    {order.status === 'assigned' && (
-                      <button
-                        onClick={() => handlePickup(order._id)}
-                        className="btn btn-secondary flex items-center space-x-2"
-                      >
-                        <Package className="w-4 h-4" />
-                        <span>Mark Picked Up</span>
-                      </button>
-                    )}
                     {getActionButton(order)}
                   </div>
                 </div>
@@ -402,12 +414,19 @@ const DriverOrders = () => {
                 {order.status === 'delivered' && (
                   <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                     <p className="text-sm text-green-800 dark:text-green-400">
-                      Delivery Fee Earned: ₹{order.pricing?.deliveryFee?.toFixed(2)}
+                      Earned: ₹{((order.pricing?.deliveryFee || 0) * 0.8).toFixed(2)} (80% of delivery fee)
                     </p>
                   </div>
                 )}
               </div>
             ))}
+            {hasMore && (
+              <div className="text-center pt-2">
+                <button onClick={() => fetchOrders(page + 1)} disabled={loadingMore} className="btn btn-secondary disabled:opacity-60">
+                  {loadingMore ? 'Loading…' : 'Load more'}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

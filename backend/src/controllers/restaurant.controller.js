@@ -401,9 +401,10 @@ exports.createVendorRestaurant = asyncHandler(async (req, res) => {
     });
   }
 
-  // Use vendor's ID as ownerId
+  // Use vendor's ID as ownerId; commission is set by admin, not the vendor
+  const { commissionRate, ...body } = req.body;
   const restaurantData = {
-    ...req.body,
+    ...body,
     ownerId: req.user._id,
     isApproved: false, // Require admin approval
     isActive: true

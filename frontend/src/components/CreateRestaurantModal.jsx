@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { X, MapPin, Phone, Mail, DollarSign, Clock, Image } from 'lucide-react';
+import { X, MapPin, Phone, Mail, DollarSign, Clock } from 'lucide-react';
+import ImageUpload from './ImageUpload';
 import toast from 'react-hot-toast';
 import { restaurantAPI } from '../services/api';
 import useAuthStore from '../store/useAuthStore';
@@ -7,13 +8,11 @@ import useAuthStore from '../store/useAuthStore';
 const CreateRestaurantModal = ({ isOpen, onClose, onSuccess }) => {
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     cuisines: '',
     imageUrl: '',
-    imageFile: null,
     street: '',
     city: '',
     state: '',
@@ -36,35 +35,6 @@ const CreateRestaurantModal = ({ isOpen, onClose, onSuccess }) => {
       ...prev,
       [name]: value
     }));
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Check file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('Image size should be less than 5MB');
-        return;
-      }
-
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please select an image file');
-        return;
-      }
-
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setFormData(prev => ({
-          ...prev,
-          imageFile: file,
-          imageUrl: reader.result // Store base64 for now
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -114,7 +84,6 @@ const CreateRestaurantModal = ({ isOpen, onClose, onSuccess }) => {
         },
         deliveryFee: parseFloat(formData.deliveryFee) || 0,
         minimumOrder: parseFloat(formData.minimumOrder) || 0,
-        commissionRate: parseFloat(formData.commissionRate) || 20
       };
 
       console.log('Creating restaurant with data:', restaurantData);
@@ -129,13 +98,14 @@ const CreateRestaurantModal = ({ isOpen, onClose, onSuccess }) => {
       console.error('Failed to create restaurant:', error);
 
       // Show validation errors
-      if (error.response?.data?.errors) {
-        const errors = error.response.data.errors;
+      // api interceptor rejects with the response body itself
+      if (error?.errors?.length) {
+        const errors = error.errors;
         errors.forEach(err => {
           toast.error(`${err.field}: ${err.message}`);
         });
       } else {
-        toast.error(error.response?.data?.message || 'Failed to create restaurant');
+        toast.error(error?.message || 'Failed to create restaurant');
       }
     } finally {
       setLoading(false);
@@ -208,78 +178,11 @@ const CreateRestaurantModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                <Image className="w-4 h-4 mr-1" />
-                Restaurant Image
-              </label>
-
-              {/* Image Preview */}
-              {imagePreview && (
-                <div className="mb-3 relative">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full max-h-64 object-contain rounded-lg border-2 border-gray-300 bg-gray-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImagePreview(null);
-                      setFormData(prev => ({
-                        ...prev,
-                        imageFile: null,
-                        imageUrl: ''
-                      }));
-                    }}
-                    className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-2 hover:bg-red-700 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-
-              {/* File Upload */}
-              <div className="mb-3">
-                <label className="w-full flex flex-col items-center px-4 py-6 bg-white border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-red-500 transition-colors">
-                  <Image className="w-12 h-12 text-gray-400 mb-2" />
-                  <span className="text-sm text-gray-600">
-                    Click to upload restaurant image
-                  </span>
-                  <span className="text-xs text-gray-400 mt-1">
-                    PNG, JPG up to 5MB
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-
-              {/* OR Divider */}
-              <div className="relative mb-3">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">OR</span>
-                </div>
-              </div>
-
-              {/* URL Input */}
-              <input
-                type="url"
-                name="imageUrl"
-                value={formData.imageFile ? '' : formData.imageUrl}
-                onChange={handleChange}
-                disabled={!!formData.imageFile}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                placeholder="Or paste image URL"
+              <ImageUpload
+                label="Restaurant image"
+                value={formData.imageUrl}
+                onChange={(url) => setFormData((prev) => ({ ...prev, imageUrl: url }))}
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Upload an image file or paste a URL
-              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -509,22 +412,6 @@ const CreateRestaurantModal = ({ isOpen, onClose, onSuccess }) => {
                   onChange={handleChange}
                   min="0"
                   step="0.01"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Commission Rate (%)
-                </label>
-                <input
-                  type="number"
-                  name="commissionRate"
-                  value={formData.commissionRate}
-                  onChange={handleChange}
-                  min="0"
-                  max="100"
-                  step="0.1"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 />
               </div>

@@ -4,7 +4,7 @@ import {
   HelpCircle, MessageSquare, ShoppingBag, CreditCard, Truck,
   Star, User, Phone, Mail, Plus, Search, ChevronRight
 } from 'lucide-react';
-import axios from 'axios';
+import api from '../../services/api';
 import toast from 'react-hot-toast';
 import Navbar from '../../components/Navbar';
 
@@ -27,8 +27,8 @@ const HelpCenterPage = () => {
 
   const fetchTickets = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/support/tickets`);
-      setTickets(response.data.data || []);
+      const response = await api.get(`/support/tickets`);
+      setTickets(response.data || []);
     } catch (error) {
       console.error('Error fetching tickets:', error);
     } finally {
@@ -45,12 +45,11 @@ const HelpCenterPage = () => {
     }
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/support/tickets`,
+      const response = await api.post(`/support/tickets`,
         formData
       );
 
-      if (response.data.success) {
+      if (response.success) {
         toast.success('Support ticket created successfully');
         setShowCreateTicket(false);
         setFormData({
@@ -62,7 +61,7 @@ const HelpCenterPage = () => {
         fetchTickets();
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to create ticket');
+      toast.error(error?.message || 'Failed to create ticket');
     }
   };
 

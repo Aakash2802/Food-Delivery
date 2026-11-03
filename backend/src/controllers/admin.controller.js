@@ -86,7 +86,7 @@ exports.getDashboardStats = asyncHandler(async (req, res) => {
     Restaurant.countDocuments({ isActive: true, isApproved: true }),
     User.countDocuments({ role: 'driver', isActive: true, isAvailable: true }),
     User.countDocuments({ role: 'customer', isActive: true }),
-    Restaurant.countDocuments({ isApproved: false, status: 'pending' })
+    Restaurant.countDocuments({ isApproved: false, status: { $ne: 'rejected' } })
   ]);
 
   // Average delivery time (in minutes)
@@ -212,12 +212,26 @@ exports.getUsers = asyncHandler(async (req, res) => {
 exports.updateUserStatus = asyncHandler(async (req, res) => {
   const { isActive } = req.body;
 
+  if (typeof isActive !== 'boolean') {
+    return res.status(400).json({
+      success: false,
+      message: 'isActive must be true or false'
+    });
+  }
+
   const user = await User.findById(req.params.userId);
 
   if (!user) {
     return res.status(404).json({
       success: false,
       message: 'User not found'
+    });
+  }
+
+  if (user.role === 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Admin accounts cannot be deactivated here'
     });
   }
 
@@ -302,7 +316,7 @@ exports.getLiveOrders = asyncHandler(async (req, res) => {
   let ordersQuery = Order.find(query)
     .sort({ createdAt: -1 })
     .populate('customerId', 'name phone')
-    .populate('restaurantId', 'name address contactNumber')
+    .populate('restaurantId', 'name location contactInfo')
     .populate('driverId', 'name phone vehicleDetails currentLocation')
     .populate('items.menuItemId', 'name price');
 
@@ -640,8 +654,8 @@ exports.getAllRestaurants = asyncHandler(async (req, res) => {
   if (search) {
     query.$or = [
       { name: { $regex: search, $options: 'i' } },
-      { email: { $regex: search, $options: 'i' } },
-      { contactNumber: { $regex: search, $options: 'i' } }
+      { 'contactInfo.email': { $regex: search, $options: 'i' } },
+      { 'contactInfo.phone': { $regex: search, $options: 'i' } }
     ];
   }
 
@@ -684,6 +698,8 @@ exports.approveRestaurant = asyncHandler(async (req, res) => {
 
   restaurant.isApproved = true;
   restaurant.status = 'active';
+  restaurant.approvedAt = new Date();
+  restaurant.rejectionReason = undefined;
   await restaurant.save();
 
   res.status(200).json({
@@ -710,6 +726,9 @@ exports.rejectRestaurant = asyncHandler(async (req, res) => {
 
   restaurant.isApproved = false;
   restaurant.status = 'rejected';
+  restaurant.rejectedAt = new Date();
+  restaurant.rejectionReason = req.body?.reason || 'Not specified';
+  restaurant.isOpen = false;
   await restaurant.save();
 
   res.status(200).json({

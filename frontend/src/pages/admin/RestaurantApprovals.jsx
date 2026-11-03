@@ -51,8 +51,10 @@ const RestaurantApprovals = () => {
   };
 
   const handleReject = async (restaurantId) => {
+    const reason = window.prompt('Reason for rejection (the vendor will see this):');
+    if (reason === null) return;
     try {
-      await adminAPI.rejectRestaurant(restaurantId);
+      await adminAPI.rejectRestaurant(restaurantId, { reason: reason.trim() || undefined });
       toast.success('Restaurant rejected');
       fetchRestaurants();
     } catch (error) {
@@ -177,7 +179,7 @@ const RestaurantApprovals = () => {
                       <div className="flex items-center space-x-4">
                         {restaurant.images?.[0] ? (
                           <img
-                            src={restaurant.images[0]}
+                            src={restaurant.images[0]?.url || restaurant.images[0]}
                             alt={restaurant.name}
                             className="w-20 h-20 rounded-xl object-cover"
                           />
@@ -208,15 +210,15 @@ const RestaurantApprovals = () => {
                       <div className="space-y-2">
                         <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                           <Phone className="w-4 h-4 mr-2 text-red-600" />
-                          {restaurant.contactNumber}
+                          {restaurant.contactInfo?.phone || 'N/A'}
                         </div>
                         <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                           <Mail className="w-4 h-4 mr-2 text-red-600" />
-                          {restaurant.email}
+                          {restaurant.contactInfo?.email || 'N/A'}
                         </div>
                         <div className="flex items-start text-sm text-gray-600 dark:text-gray-400">
                           <MapPin className="w-4 h-4 mr-2 text-red-600 mt-0.5" />
-                          <span>{restaurant.address?.street}, {restaurant.address?.city}, {restaurant.address?.state} - {restaurant.address?.zipCode}</span>
+                          <span>{restaurant.location?.street}, {restaurant.location?.city}, {restaurant.location?.state} - {restaurant.location?.zipCode}</span>
                         </div>
                       </div>
 
@@ -227,7 +229,7 @@ const RestaurantApprovals = () => {
                           Rating: {restaurant.rating?.average?.toFixed(1) || 'N/A'} ({restaurant.rating?.count || 0} reviews)
                         </div>
                         <div className="text-sm text-gray-600 dark:text-gray-400">
-                          <strong className="text-gray-900 dark:text-white">Cuisine:</strong> {restaurant.cuisineType?.join(', ') || 'N/A'}
+                          <strong className="text-gray-900 dark:text-white">Cuisine:</strong> {restaurant.cuisines?.join(', ') || 'N/A'}
                         </div>
                         <div className="text-sm text-gray-600 dark:text-gray-400">
                           <strong className="text-gray-900 dark:text-white">Delivery Time:</strong> {restaurant.deliveryTime?.min || 0} - {restaurant.deliveryTime?.max || 0} mins

@@ -211,8 +211,9 @@ orderSchema.pre('save', async function(next) {
     this.orderNumber = `ORD${timestamp}${random}`;
   }
 
-  // Add to status history
-  if (this.isModified('status')) {
+  // Add to status history (skip if updateStatus() already recorded this status)
+  const lastEntry = this.statusHistory[this.statusHistory.length - 1];
+  if (this.isModified('status') && lastEntry?.status !== this.status) {
     this.statusHistory.push({
       status: this.status,
       timestamp: new Date()

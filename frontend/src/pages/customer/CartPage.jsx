@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import useCartStore from '../../store/useCartStore';
+import { calculatePricing } from '../../utils/pricing';
 import useAuthStore from '../../store/useAuthStore';
 import Navbar from '../../components/Navbar';
 
@@ -22,9 +23,9 @@ const CartPage = () => {
   const [promoCode, setPromoCode] = useState('');
 
   const subtotal = getTotal();
-  const deliveryFee = subtotal > 0 ? 40 : 0;
-  const gst = subtotal * 0.05; // 5% GST
-  const total = subtotal + deliveryFee + gst;
+  // Same formula the backend charges (see utils/pricing.js)
+  const { deliveryFee, taxes: gst, platformFee, total } =
+    calculatePricing(subtotal, restaurant?.deliveryFee || 0);
 
   const handleQuantityChange = (index, change) => {
     const item = items[index];
@@ -217,8 +218,13 @@ const CartPage = () => {
                   </div>
 
                   <div className="flex justify-between text-gray-700 dark:text-gray-300">
-                    <span>GST (5%)</span>
+                    <span>GST (9%)</span>
                     <span>₹{gst.toFixed(2)}</span>
+                  </div>
+
+                  <div className="flex justify-between text-gray-700 dark:text-gray-300">
+                    <span>Platform Fee</span>
+                    <span>₹{platformFee.toFixed(2)}</span>
                   </div>
 
                   <div className="border-t dark:border-gray-700 pt-3">

@@ -15,6 +15,7 @@ const OrderTrackingPage = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [driverLocation, setDriverLocation] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
 
@@ -22,9 +23,10 @@ const OrderTrackingPage = () => {
     { key: 'pending', label: 'Order Placed', icon: Package },
     { key: 'confirmed', label: 'Confirmed', icon: CheckCircle },
     { key: 'preparing', label: 'Preparing', icon: Package },
-    { key: 'ready_for_pickup', label: 'Ready', icon: Package },
-    { key: 'picked_up', label: 'Picked Up', icon: Package },
-    { key: 'out_for_delivery', label: 'Out for Delivery', icon: MapPin },
+    { key: 'ready', label: 'Ready', icon: Package },
+    { key: 'assigned', label: 'Driver Assigned', icon: Package },
+    { key: 'picked', label: 'Picked Up', icon: Package },
+    { key: 'en_route', label: 'Out for Delivery', icon: MapPin },
     { key: 'delivered', label: 'Delivered', icon: CheckCircle }
   ];
 
@@ -41,6 +43,7 @@ const OrderTrackingPage = () => {
   const fetchOrderDetails = async () => {
     try {
       setLoading(true);
+      setLoadError(false);
       const response = await orderAPI.getById(id);
       console.log('📦 Order response:', response);
 
@@ -57,6 +60,7 @@ const OrderTrackingPage = () => {
       // Track order via socket
       socketService.trackOrder(id);
     } catch (error) {
+      setLoadError(true);
       toast.error('Failed to load order details');
       console.error('Order fetch error:', error);
     } finally {
@@ -71,9 +75,11 @@ const OrderTrackingPage = () => {
         setOrder(prevOrder => ({
           ...prevOrder,
           status: data.status,
-          statusHistory: data.statusHistory
+          statusHistory: data.statusHistory || prevOrder?.statusHistory
         }));
         toast.success(`Order ${data.status.replace(/_/g, ' ')}`);
+        // Refresh to pick up driver details etc.
+        if (data.status === 'assigned') fetchOrderDetails();
       }
     });
 
@@ -107,15 +113,27 @@ const OrderTrackingPage = () => {
   const getEstimatedDeliveryTime = () => {
     if (!order) return 'Calculating...';
 
-    const createdAt = new Date(order.createdAt);
-    const estimatedMinutes = order.restaurantId?.deliveryTime?.max || 45;
-    const estimatedTime = new Date(createdAt.getTime() + estimatedMinutes * 60000);
+    const estimatedTime = order.estimatedDeliveryTime
+      ? new Date(order.estimatedDeliveryTime)
+      : new Date(new Date(order.createdAt).getTime() + 45 * 60000);
 
     return estimatedTime.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit'
     });
   };
+
+  if (loadError && !order) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="flex flex-col justify-center items-center h-96 space-y-4">
+          <p className="text-gray-600">Couldn't load this order.</p>
+          <button onClick={fetchOrderDetails} className="btn btn-primary">Try again</button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading || !order || !order.status) {
     return (
@@ -129,7 +147,7 @@ const OrderTrackingPage = () => {
   }
 
   const currentStep = getCurrentStepIndex();
-  const canCancel = ['pending', 'confirmed'].includes(order.status || '');
+  const canCancel = ['pending', 'confirmed', 'preparing'].includes(order.status || '');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -164,7 +182,7 @@ const OrderTrackingPage = () => {
             <div className="flex items-center justify-between">
               <span className={`px-4 py-2 rounded-full font-semibold ${
                 order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                ['cancelled', 'rejected'].includes(order.status) ? 'bg-red-100 text-red-800' :
                 'bg-blue-100 text-blue-800'
               }`}>
                 {order.status?.replace(/_/g, ' ').toUpperCase() || 'PENDING'}
@@ -182,7 +200,7 @@ const OrderTrackingPage = () => {
           </div>
 
           {/* Order Progress */}
-          {order.status !== 'cancelled' && (
+          {!['cancelled', 'rejected'].includes(order.status) && (
             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Order Progress</h2>
 
@@ -254,13 +272,13 @@ const OrderTrackingPage = () => {
               <p className="font-semibold text-lg">
                 {order.restaurantId?.name || 'Restaurant'}
               </p>
-              {order.restaurantId?.contactNumber && (
+              {order.restaurantId?.contactInfo?.phone && (
                 <a
-                  href={`tel:${order.restaurantId.contactNumber}`}
+                  href={`tel:${order.restaurantId.contactInfo.phone}`}
                   className="flex items-center space-x-2 text-red-600 hover:text-red-700 mt-2"
                 >
                   <Phone className="w-4 h-4" />
-                  <span>{order.restaurantId.contactNumber}</span>
+                  <span>{order.restaurantId.contactInfo.phone}</span>
                 </a>
               )}
             </div>
@@ -298,7 +316,7 @@ const OrderTrackingPage = () => {
             </h3>
             <p className="text-gray-700">
               {order.deliveryAddress?.street}<br />
-              {order.deliveryAddress?.city}, {order.deliveryAddress?.state} - {order.deliveryAddress?.postalCode}
+              {order.deliveryAddress?.city}, {order.deliveryAddress?.state} - {order.deliveryAddress?.zipCode}
             </p>
           </div>
 

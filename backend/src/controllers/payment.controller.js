@@ -2,6 +2,7 @@ const Order = require('../models/Order');
 const { asyncHandler } = require('../middleware/error.middleware');
 const config = require('../config/env');
 const crypto = require('crypto');
+const { emitPaymentCompleted } = require('../sockets');
 
 // Initialize payment gateways
 let razorpay, stripe;
@@ -124,7 +125,8 @@ exports.createPaymentOrder = asyncHandler(async (req, res) => {
         amount,
         currency: gateway === 'stripe' ? 'inr' : 'INR',
         key: gateway === 'razorpay' ? config.payment.razorpay.keyId : config.payment.stripe.publishableKey,
-        orderNumber: order.orderNumber
+        orderNumber: order.orderNumber,
+        isMock: config.payment.useMock
       }
     }
   });
@@ -167,6 +169,8 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
     order.paymentInfo.paidAt = new Date();
     await order.save();
 
+    emitPaymentCompleted(order);
+
     return res.status(200).json({
       success: true,
       message: 'Payment verified successfully (mock)',
@@ -176,6 +180,15 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
 
   // Verify Razorpay signature
   if (razorpay && order.paymentInfo.paymentGateway === 'razorpay') {
+    // The payment must belong to the Razorpay order created for THIS order,
+    // otherwise a valid payment for a cheaper order could be replayed here
+    if (!order.paymentInfo.gatewayOrderId || razorpay_order_id !== order.paymentInfo.gatewayOrderId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment does not match this order'
+      });
+    }
+
     const sign = razorpay_order_id + '|' + razorpay_payment_id;
     const expectedSign = crypto
       .createHmac('sha256', config.payment.razorpay.keySecret)
@@ -194,6 +207,8 @@ exports.verifyPayment = asyncHandler(async (req, res) => {
     order.paymentInfo.transactionId = razorpay_payment_id;
     order.paymentInfo.paidAt = new Date();
     await order.save();
+
+    emitPaymentCompleted(order);
 
     res.status(200).json({
       success: true,
@@ -295,6 +310,7 @@ exports.webhookHandler = asyncHandler(async (req, res) => {
         order.paymentInfo.transactionId = paymentEntity.id;
         order.paymentInfo.paidAt = new Date(paymentEntity.created_at * 1000);
         await order.save();
+        emitPaymentCompleted(order);
       }
     } else if (event === 'payment.failed') {
       const order = await Order.findOne({

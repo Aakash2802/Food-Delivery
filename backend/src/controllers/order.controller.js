@@ -5,6 +5,20 @@ const User = require('../models/User');
 const { asyncHandler } = require('../middleware/error.middleware');
 const { calculateOrderPricing, estimateDeliveryTime, paginate, buildPaginationResponse } = require('../utils/helpers');
 const { awardCoinsForOrder } = require('../services/loyaltyService');
+const { emitNewOrder, emitOrderStatusUpdate, emitDriverAssigned } = require('../sockets');
+
+// Status each role may move an order to, keyed by the order's current status
+const VENDOR_TRANSITIONS = {
+  pending: ['confirmed', 'rejected'],
+  confirmed: ['preparing', 'rejected'],
+  preparing: ['ready']
+};
+
+const DRIVER_TRANSITIONS = {
+  assigned: ['picked'],
+  picked: ['en_route', 'delivered'],
+  en_route: ['delivered']
+};
 
 /**
  * @desc    Create new order
@@ -15,7 +29,7 @@ exports.createOrder = asyncHandler(async (req, res) => {
   console.log('🚀 CREATE ORDER CALLED');
   console.log('📦 Full request body:', JSON.stringify(req.body, null, 2));
 
-  const { restaurantId, items, deliveryAddress, contactPhone, paymentMethod, promoCode } = req.body;
+  const { restaurantId, items, deliveryAddress, contactPhone, paymentMethod, promoCode, scheduledFor } = req.body;
 
   console.log('📦 Order Request:', { restaurantId, itemsCount: items?.length, deliveryAddress });
 
@@ -55,7 +69,8 @@ exports.createOrder = asyncHandler(async (req, res) => {
 
   console.log('📝 Found menu items:', menuItems.length, 'Expected:', items.length);
 
-  if (menuItems.length !== items.length) {
+  // Compare against unique IDs - the same dish can appear twice with different customizations
+  if (menuItems.length !== new Set(menuItemIds.map(String)).size) {
     console.log('❌ Menu items validation failed');
     return res.status(400).json({
       success: false,
@@ -67,10 +82,11 @@ exports.createOrder = asyncHandler(async (req, res) => {
   const orderItems = items.map(item => {
     const menuItem = menuItems.find(m => m._id.toString() === item.menuItemId);
 
-    let customizationPrice = 0;
     const customizations = item.customizations?.map(custom => {
       const menuCustomization = menuItem.customizations?.find(c => c.name === custom.name);
       if (menuCustomization) {
+        // Price of this customization only (not a running total across all of them)
+        let customizationPrice = 0;
         const selectedOptions = custom.selectedOptions.map(opt => {
           const option = menuCustomization.options.find(o => o.label === opt);
           if (option) {
@@ -159,12 +175,18 @@ exports.createOrder = asyncHandler(async (req, res) => {
       discount: promoDiscount
     } : undefined,
     commission: pricing.commission,
-    estimatedDeliveryTime: new Date(Date.now() + (restaurant.deliveryTime.max + 15) * 60000)
+    scheduledFor: scheduledFor || undefined,
+    estimatedDeliveryTime: scheduledFor
+      ? new Date(scheduledFor)
+      : new Date(Date.now() + (restaurant.deliveryTime.max + 15) * 60000)
   });
 
   // Update restaurant order count
   restaurant.currentOrdersCount += 1;
   await restaurant.save();
+
+  // Notify vendor/admin in real time (before populate, so IDs are plain ObjectIds)
+  emitNewOrder(order);
 
   // If payment method is not COD, create payment order
   let paymentDetails = null;
@@ -330,11 +352,11 @@ exports.updateOrderStatusVendor = asyncHandler(async (req, res) => {
   }
 
   // Allowed status transitions for vendor
-  const allowedStatuses = ['confirmed', 'preparing', 'ready', 'rejected'];
-  if (!allowedStatuses.includes(status)) {
+  const allowedNext = VENDOR_TRANSITIONS[order.status] || [];
+  if (!allowedNext.includes(status)) {
     return res.status(400).json({
       success: false,
-      message: 'Invalid status for vendor'
+      message: `Cannot change order from '${order.status}' to '${status}'`
     });
   }
 
@@ -357,8 +379,7 @@ exports.updateOrderStatusVendor = asyncHandler(async (req, res) => {
 
   await order.save();
 
-  // Emit socket event (will be implemented)
-  // io.to(`order_${order._id}`).emit('order:status_updated', { orderId, status, timestamp });
+  emitOrderStatusUpdate(order);
 
   res.status(200).json({
     success: true,
@@ -395,11 +416,11 @@ exports.updateOrderStatusDriver = asyncHandler(async (req, res) => {
   }
 
   // Allowed status transitions for driver
-  const allowedStatuses = ['picked', 'en_route', 'delivered'];
-  if (!allowedStatuses.includes(status)) {
+  const allowedNext = DRIVER_TRANSITIONS[order.status] || [];
+  if (!allowedNext.includes(status)) {
     return res.status(400).json({
       success: false,
-      message: 'Invalid status for driver'
+      message: `Cannot change order from '${order.status}' to '${status}'`
     });
   }
 
@@ -412,14 +433,16 @@ exports.updateOrderStatusDriver = asyncHandler(async (req, res) => {
 
     // Calculate distance
     const restaurant = await Restaurant.findById(order.restaurantId);
-    if (restaurant && restaurant.address?.location?.coordinates && order.deliveryAddress?.location?.coordinates) {
+    const restCoords = restaurant?.location?.coordinates?.coordinates;
+    if (restCoords?.length === 2 && order.deliveryAddress?.location?.coordinates) {
       const { calculateDistance } = require('../utils/helpers');
-      const [restLng, restLat] = restaurant.address.location.coordinates;
+      const [restLng, restLat] = restCoords;
       const [custLng, custLat] = order.deliveryAddress.location.coordinates;
-      order.distance = calculateDistance(
+      // calculateDistance returns metres; Order.distance is in km
+      order.distance = Math.round(calculateDistance(
         { latitude: restLat, longitude: restLng },
         { latitude: custLat, longitude: custLng }
-      );
+      ) / 10) / 100;
     }
 
     // Decrease restaurant order count
@@ -446,8 +469,7 @@ exports.updateOrderStatusDriver = asyncHandler(async (req, res) => {
 
   await order.save();
 
-  // Emit socket event
-  // io.to(`order_${order._id}`).emit('order:status_updated', { orderId, status, timestamp });
+  emitOrderStatusUpdate(order);
 
   res.status(200).json({
     success: true,
@@ -509,6 +531,8 @@ exports.cancelOrder = asyncHandler(async (req, res) => {
 
   await order.save();
 
+  emitOrderStatusUpdate(order);
+
   res.status(200).json({
     success: true,
     message: 'Order cancelled successfully',
@@ -562,11 +586,10 @@ exports.assignDriver = asyncHandler(async (req, res) => {
   await order.updateStatus('assigned', req.user._id, 'Driver assigned');
   await order.save();
 
-  await order.populate('driverId', 'name phone vehicleDetails currentLocation');
+  emitDriverAssigned(order, driver);
+  emitOrderStatusUpdate(order);
 
-  // Emit socket events
-  // io.to(`driver_${driverId}`).emit('order:new_assignment', { order });
-  // io.to(`order_${order._id}`).emit('order:driver_assigned', { driver: order.driverId });
+  await order.populate('driverId', 'name phone vehicleDetails currentLocation');
 
   res.status(200).json({
     success: true,
@@ -594,6 +617,12 @@ exports.getOrderStats = asyncHandler(async (req, res) => {
 
   // Filter by role
   if (req.user.role === 'vendor') {
+    if (!req.user.restaurantId) {
+      return res.status(400).json({
+        success: false,
+        message: 'You do not have a restaurant'
+      });
+    }
     query.restaurantId = req.user.restaurantId;
   }
 

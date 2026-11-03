@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Eye, EyeOff, X, Save, Filter } from 'lucide-react'
 import toast from 'react-hot-toast';
 import { menuAPI, restaurantAPI } from '../../services/api';
 import Navbar from '../../components/Navbar';
+import ImageUpload from '../../components/ImageUpload';
 
 const VendorMenu = () => {
   const [restaurant, setRestaurant] = useState(null);
@@ -17,7 +18,8 @@ const VendorMenu = () => {
     price: '',
     category: '',
     isVeg: true,
-    isAvailable: true
+    isAvailable: true,
+    image: ''
   });
 
   const categories = ['Appetizers', 'Main Course', 'Desserts', 'Beverages', 'Fast Food', 'Chinese', 'Italian', 'Indian'];
@@ -65,7 +67,8 @@ const VendorMenu = () => {
         price: item.price.toString(),
         category: item.category,
         isVeg: item.isVeg !== false,
-        isAvailable: item.isAvailable !== false
+        isAvailable: item.isAvailable !== false,
+        image: item.images?.[0] || ''
       });
     } else {
       setEditingItem(null);
@@ -75,7 +78,8 @@ const VendorMenu = () => {
         price: '',
         category: categories[0],
         isVeg: true,
-        isAvailable: true
+        isAvailable: true,
+        image: ''
       });
     }
     setShowModal(true);
@@ -90,7 +94,8 @@ const VendorMenu = () => {
       price: '',
       category: '',
       isVeg: true,
-      isAvailable: true
+      isAvailable: true,
+      image: ''
     });
   };
 
@@ -103,8 +108,10 @@ const VendorMenu = () => {
     }
 
     try {
+      const { image, ...fields } = formData;
       const itemData = {
-        ...formData,
+        ...fields,
+        images: image ? [image] : [],
         price: parseFloat(formData.price),
         restaurantId: restaurant._id
       };
@@ -262,9 +269,9 @@ const VendorMenu = () => {
               >
                 {/* Item Image Placeholder */}
                 <div className="h-48 bg-gradient-to-br from-red-100 to-orange-100 flex items-center justify-center">
-                  {item.images?.[0]?.url ? (
+                  {item.images?.[0] ? (
                     <img
-                      src={item.images[0].url}
+                      src={item.images[0]}
                       alt={item.name}
                       className="w-full h-full object-cover"
                     />
@@ -394,6 +401,13 @@ const VendorMenu = () => {
                   rows="3"
                 />
               </div>
+
+              {/* Photo */}
+              <ImageUpload
+                label="Photo"
+                value={formData.image}
+                onChange={(url) => setFormData({ ...formData, image: url })}
+              />
 
               {/* Price & Category */}
               <div className="grid grid-cols-2 gap-4">

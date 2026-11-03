@@ -8,6 +8,41 @@ const OrderMonitoring = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
+  const [drivers, setDrivers] = useState([]);
+  const [chosenDriver, setChosenDriver] = useState({}); // orderId -> driverId
+  const [assigning, setAssigning] = useState(null);
+
+  useEffect(() => {
+    fetchDrivers();
+  }, []);
+
+  const fetchDrivers = async () => {
+    try {
+      const response = await adminAPI.getDrivers({ isAvailable: true, isActive: true, limit: 100 });
+      setDrivers(response.data || []);
+    } catch (error) {
+      console.error('Failed to load drivers:', error);
+    }
+  };
+
+  const handleAssign = async (orderId) => {
+    const driverId = chosenDriver[orderId];
+    if (!driverId) {
+      toast.error('Choose a driver first');
+      return;
+    }
+    try {
+      setAssigning(orderId);
+      await adminAPI.assignDriver(orderId, driverId);
+      toast.success('Driver assigned');
+      fetchOrders();
+      fetchDrivers();
+    } catch (error) {
+      toast.error(error?.message || 'Failed to assign driver');
+    } finally {
+      setAssigning(null);
+    }
+  };
 
   useEffect(() => {
     fetchOrders();
@@ -156,13 +191,13 @@ const OrderMonitoring = () => {
                       <p className="font-semibold text-gray-900 dark:text-white">Restaurant</p>
                     </div>
                     <p className="font-medium text-gray-900 dark:text-white">{order.restaurantId?.name || 'N/A'}</p>
-                    {order.restaurantId?.contactNumber && (
+                    {order.restaurantId?.contactInfo?.phone && (
                       <a
-                        href={`tel:${order.restaurantId.contactNumber}`}
+                        href={`tel:${order.restaurantId.contactInfo.phone}`}
                         className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 flex items-center mt-1"
                       >
                         <Phone className="w-3 h-3 mr-1" />
-                        {order.restaurantId.contactNumber}
+                        {order.restaurantId.contactInfo.phone}
                       </a>
                     )}
                   </div>
@@ -204,8 +239,32 @@ const OrderMonitoring = () => {
                           </a>
                         )}
                       </>
+                    ) : order.status === 'ready' ? (
+                      <div className="space-y-2">
+                        <select
+                          value={chosenDriver[order._id] || ''}
+                          onChange={(e) => setChosenDriver({ ...chosenDriver, [order._id]: e.target.value })}
+                          className="input text-sm"
+                        >
+                          <option value="">Choose an available driver…</option>
+                          {drivers.map((d) => (
+                            <option key={d._id} value={d._id}>
+                              {d.name} ({d.activeOrders || 0} active)
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => handleAssign(order._id)}
+                          disabled={assigning === order._id || drivers.length === 0}
+                          className="btn btn-primary w-full text-sm disabled:opacity-50"
+                        >
+                          {assigning === order._id ? 'Assigning…' : drivers.length === 0 ? 'No drivers available' : 'Assign driver'}
+                        </button>
+                      </div>
                     ) : (
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Not assigned yet</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Not assigned yet{['pending', 'confirmed', 'preparing'].includes(order.status) ? ' (can assign once the order is Ready)' : ''}
+                      </p>
                     )}
                   </div>
                 </div>

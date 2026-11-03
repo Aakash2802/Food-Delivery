@@ -28,6 +28,7 @@ import VendorDashboard from './pages/vendor/VendorDashboard';
 import VendorOrders from './pages/vendor/VendorOrders';
 import VendorMenu from './pages/vendor/VendorMenu';
 import VendorReviews from './pages/vendor/VendorReviews';
+import VendorSettings from './pages/vendor/VendorSettings';
 
 // Driver Pages
 import DriverDashboard from './pages/driver/DriverDashboard';
@@ -39,6 +40,7 @@ import RestaurantApprovals from './pages/admin/RestaurantApprovals';
 import UserManagement from './pages/admin/UserManagement';
 import OrderMonitoring from './pages/admin/OrderMonitoring';
 import PromoCodeManagement from './pages/admin/PromoCodeManagement';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -236,6 +238,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/vendor/settings"
+          element={
+            <ProtectedRoute allowedRoles={['vendor']}>
+              <VendorSettings />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Driver Routes */}
         <Route
@@ -293,6 +303,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <PromoCodeManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/analytics"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminAnalytics />
             </ProtectedRoute>
           }
         />

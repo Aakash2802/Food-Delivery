@@ -22,26 +22,28 @@ const useCartStore = create(
         const { items, restaurant: currentRestaurant, triggerCartBounce } = get();
 
         // Check if switching restaurants
-        if (currentRestaurant && currentRestaurant._id !== restaurant._id) {
+        const switching = currentRestaurant && currentRestaurant._id !== restaurant._id;
+        if (switching) {
           const confirmed = window.confirm(
             'Your cart contains items from another restaurant. Do you want to clear it and start a new order?'
           );
           if (!confirmed) return;
-          set({ items: [], restaurant });
         }
+        const baseItems = switching ? [] : items;
 
         // Check if item already exists
-        const existingIndex = items.findIndex(
+        const existingIndex = baseItems.findIndex(
           (i) => i.menuItemId === item.menuItemId &&
           JSON.stringify(i.customizations) === JSON.stringify(item.customizations)
         );
 
         if (existingIndex >= 0) {
-          const newItems = [...items];
-          newItems[existingIndex].quantity += item.quantity;
-          set({ items: newItems });
+          const newItems = baseItems.map((i, idx) =>
+            idx === existingIndex ? { ...i, quantity: i.quantity + item.quantity } : i
+          );
+          set({ items: newItems, restaurant });
         } else {
-          set({ items: [...items, item], restaurant });
+          set({ items: [...baseItems, item], restaurant });
         }
 
         // Trigger cart bounce animation
